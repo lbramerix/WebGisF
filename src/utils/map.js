@@ -1,5 +1,5 @@
 /* 引入本地文件 */
-import hyJson from "@/assets/area/330424.json";
+import hyJson from "@/assets/area/中华人民共和国.json";
 /* 引入ol方法 */
 import VectorSource from "ol/source/Vector";
 import GeoJSON from "ol/format/GeoJSON";
