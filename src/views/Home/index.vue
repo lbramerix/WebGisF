@@ -39,6 +39,7 @@
             style="background: rgb(0, 25, 46); position: absolute"
             id="map"
         >
+          <div id="mouse-position"/>
           <div id="popup" class="ol-popup">
             <a
                 href="#"
@@ -125,6 +126,7 @@ import UserDataPreview from './components/UserDataPreview'
 import DeviceDataPreview from './components/DeviceDataPreview'
 import { cityData } from '../../utils/jsonData'
 /* 从openlayers 引入方法 */
+import * as Coordinate from "ol/coordinate"
 import Map from "ol/Map";
 import TileLayer from "ol/layer/Tile";
 import XYZ from "ol/source/XYZ";
@@ -167,6 +169,8 @@ export default {
         iotDoorControlCount: ''
       },
       map: null,
+      //实例化鼠标位置控件（MousePosition）
+      mousePositionControl: null,
       defaultList: [], //需要一直展示的图层
       overlay: null, //overlay信息
       selectedFeature: null, //选中的要素
@@ -455,7 +459,7 @@ export default {
           a2: "经信局", // 监管单位
           b2: "0辆", // 自查自纠数
           c2: "-", // 联系电话
-          d1: "嘉南线滕泾村西侧", // 单位地址
+          d1: "嘉南线滕泾村西", // 单位地址
           img: require("@/assets/images/fake_dw.png"),
         },
       ],
@@ -504,6 +508,19 @@ export default {
           url: "http://map.geoq.cn/ArcGIS/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile/{z}/{y}/{x}",
         }),
       });
+      //实例化鼠标位置控件（MousePosition）
+      this.mousePositionControl = new Control.MousePosition({
+        //坐标格式
+        coordinateFormat: Coordinate.createStringXY(4),
+        //地图投影坐标系（若未设置则输出为默认投影坐标系下的坐标）
+        projection: 'EPSG:4326',
+        //坐标信息显示样式类名，默认是'ol-mouse-position'
+        className: 'custom-mouse-position',
+        //显示鼠标位置信息的目标容器
+        target: document.getElementById('mouse-position'),
+        //未定义坐标的标记
+        undefinedHTML: '&nbsp;'
+      });
       this.map = new Map({
         target: "map", // 指向对象
         layers: [mapUrl],
@@ -520,7 +537,7 @@ export default {
           attribution: false,
           zoom: false,
           rotate: false,
-        }),
+        }).extend([this.mousePositionControl]),//加载鼠标位置控件,
         interactions: defaultInteractions({
           doubleClickZoom: false, //是否需要双击缩放
         }),
@@ -891,6 +908,22 @@ export default {
       }
     }
   }
+  /* 鼠标位置控件层样式设置 */
+  #mouse-position {
+    float: left;
+    position: absolute;
+    bottom: 5px;
+    width: 200px;
+    height: 20px;
+    /*在地图容器中的层，要设置z-index的值让其显示在地图上层*/
+    z-index: 2000;
+  }
+  /* 鼠标位置信息自定义样式设置 */
+  .custom-mouse-position {
+    color: rgb(255, 255, 255);
+    font-size: 16px;
+    font-family: "微软雅黑";
+  }
 }
 
 .ol-popup {
@@ -934,4 +967,5 @@ export default {
   content: "✖";
   color: #00eaff;
 }
+
 </style>
