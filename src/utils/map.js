@@ -60,13 +60,13 @@ export const mapjs = {
 			that.map.addLayer(that.converLayer);
 			that.regionLayers.push(that.converLayer);
 			/* 添加遮罩 */
-			const fts = new GeoJSON().readFeatures(hyJson);
-			const ft = fts[0];
-			const converGeom = that.erase(ft.getGeometry());
-			const convertFt = new Feature({
-				geometry: converGeom,
-			});
-			that.converLayer.getSource().addFeature(convertFt);
+			// const fts = new GeoJSON().readFeatures(hyJson);
+			// const ft = fts[0];
+			// const converGeom = that.erase(ft.getGeometry());
+			// const convertFt = new Feature({
+			// 	geometry: converGeom,
+			// });
+			// that.converLayer.getSource().addFeature(convertFt);
 		},
 		//擦除操作，生产遮罩范围
 		erase(geom) {

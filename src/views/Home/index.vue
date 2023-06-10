@@ -556,12 +556,12 @@ export default {
           that.regionLayers.map((item) => {
             that.map.removeLayer(item);
           });
-          that.addRegion();
+          // that.addRegion();
         } else {
           that.regionLayers.map((item) => {
             that.map.removeLayer(item);
           });
-          that.addModal();
+          // that.addModal();
         }
       });
       /* 地图单击事件 */
@@ -911,6 +911,7 @@ export default {
   /* 鼠标位置控件层样式设置 */
   #mouse-position {
     float: left;
+    color: rgb(255, 255, 255);
     position: absolute;
     bottom: 5px;
     width: 200px;
