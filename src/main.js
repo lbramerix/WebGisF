@@ -2,7 +2,7 @@ import Vue from 'vue'
 
 import App from './App.vue'
 import router from './router'
-// import * as echarts from 'echarts'
+import * as echarts from 'echarts'
 import './utils/mixins'
 import axios from "axios";
 import store from './store'
@@ -22,6 +22,7 @@ import {
   activeRingChart,
 } from '@jiaminghi/data-view'
 Vue.use(ElementUI)
+Vue.use(echarts)
 Vue.use(loading)
 Vue.use(borderBox8)
 Vue.use(decoration3)

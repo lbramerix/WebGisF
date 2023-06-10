@@ -29,7 +29,7 @@
 
     <section ref="sectionRef">
       <!-- 地图 -->
-<!--      <div id="userMap" style="height: 100%"></div>-->
+      <!--      <div id="userMap" style="height: 100%"></div>-->
       <div
           id="userMap"
           class="map-bg"
@@ -111,8 +111,8 @@
         </div>
         <div>
           <p>演唱会总数 &nbsp; {{bubbleData.openUserCount}}</p>
-<!--          <p>设备总数 &nbsp; {{bubbleData.iotDoorControlCount}}</p>-->
-<!--          <p>小区总数 &nbsp; {{bubbleData.communityCount}}</p>-->
+          <!--          <p>设备总数 &nbsp; {{bubbleData.iotDoorControlCount}}</p>-->
+          <!--          <p>小区总数 &nbsp; {{bubbleData.communityCount}}</p>-->
         </div>
       </div>
     </div>
@@ -136,7 +136,7 @@ import { defaults as defaultInteractions } from "ol/interaction";
 import Overlay from "ol/Overlay";
 /* 引入混合文件 */
 import { mapjs } from "../../utils/map";
-import {getRequest} from "@/utils/api";
+// import {getRequest} from "@/utils/api";
 /* 引入组件 */
 // import mapChecks from "./components/mapChecks.vue";
 /* 引入vuex */
@@ -484,12 +484,12 @@ export default {
     getTest(){
       //初始化新闻总数
 
-        getRequest('/citycount/testCity').then(resp => {
-          if (resp) {
-           this.testCityname=resp;
-           console.log(this.testCityname);
-          }
-        })
+      // getRequest('/citycount/testCity').then(resp => {
+      //   if (resp) {
+      //     this.testCityname=resp;
+      //     console.log(this.testCityname);
+      //   }
+      // })
 
     },
     ...mapMutations(["setFull"]),
@@ -647,31 +647,31 @@ export default {
         this.allCommunityCount = cityData.data.communityCount
         this.cityInfoList = []
         this.cityInfoList.push(
-        //     {
-        //   id: 'u-iotdoor',
-        //   name: '全国社区设备总量',
-        //   value: this.formatter(cityData.data.iotdoorControlCount),
-        //   valueArr: this.formatter(cityData.data.iotdoorControlCount).split(''),
-        //   type: cityData.data.iotdoorControlCountUpType,
-        //   percentage: `${(cityData.data.iotdoorControlCountPercentage * 100).toFixed(1)} %`
-        // },
+            //     {
+            //   id: 'u-iotdoor',
+            //   name: '全国社区设备总量',
+            //   value: this.formatter(cityData.data.iotdoorControlCount),
+            //   valueArr: this.formatter(cityData.data.iotdoorControlCount).split(''),
+            //   type: cityData.data.iotdoorControlCountUpType,
+            //   percentage: `${(cityData.data.iotdoorControlCountPercentage * 100).toFixed(1)} %`
+            // },
             {
-          id: 'u-community',
-          name: '全国演唱会总量',
-          value: "233",
-          // value: this.formatter(cityData.data.cityCount),
-          valueArr: this.formatter(cityData.data.cityCount).split(''),
-          type: cityData.data.cityCountUpType,
-          percentage: `${(cityData.data.cityCountPercentage * 100).toFixed(1)}%`
-        }
-        // , {
-        //   id: 'u-city',
-        //   name: '全国住宅社区',
-        //   value: this.formatter(cityData.data.communityCount),
-        //   valueArr: this.formatter(cityData.data.communityCount).split(''),
-        //   type: cityData.data.communityCountUpType,
-        //   percentage: `${(cityData.data.communityCountPercentage * 100).toFixed(1)}%`
-        // }
+              id: 'u-community',
+              name: '全国演唱会总量',
+              value: "233",
+              // value: this.formatter(cityData.data.cityCount),
+              valueArr: this.formatter(cityData.data.cityCount).split(''),
+              type: cityData.data.cityCountUpType,
+              percentage: `${(cityData.data.cityCountPercentage * 100).toFixed(1)}%`
+            }
+            // , {
+            //   id: 'u-city',
+            //   name: '全国住宅社区',
+            //   value: this.formatter(cityData.data.communityCount),
+            //   valueArr: this.formatter(cityData.data.communityCount).split(''),
+            //   type: cityData.data.communityCountUpType,
+            //   percentage: `${(cityData.data.communityCountPercentage * 100).toFixed(1)}%`
+            // }
         )
         this.timedRefresh(this.cityInfoList, 'city')
         cityData.data.cityList.sort((a, b) => {
@@ -685,71 +685,71 @@ export default {
           }
         })
         const pointLayer = new PointLayer({ zIndex: 1 })
-          .source(cityData.data.cityList, {
-            parser: {
-              type: 'json',
-              x: 'longitude',
-              y: 'latitude'
-            }
-          })
-          .shape('circle')
-          .animate(true)
-          .size('count', [ 0, 45 ])
-          .color('count', [
-            '#3CA0FF',
-            '#3CA0FF',
-            '#3CA0FF',
-          ])
-          .active(true)
-          .style({
-            opacity: 0.5,
-            strokeWidth: 0
-          });
-          pointLayer.on('mousemove', e => {
-            clearTimeout(this.pointTimer)
-            this.pointTimer = setTimeout(() => {
-              const iotPercentage = (e.feature.iotDoorControlCount / cityData.data.iotdoorControlCount).toFixed(2) > 0.001 ? (e.feature.iotDoorControlCount / cityData.data.iotdoorControlCount).toFixed(2) : 0.001
-              const openPercentage = (e.feature.openUserCount / cityData.data.userCommunity).toFixed(2) > 0.001 ? (e.feature.openUserCount / cityData.data.userCommunity).toFixed(2) : 0.001
-              const communityPercentage = (e.feature.communityCount / cityData.data.communityCount).toFixed(2) > 0.001 ? (e.feature.communityCount / cityData.data.communityCount).toFixed(2) : 0.001
-              const ringData = [{
-                id: 'open',
-                radius: 45,
-                value: openPercentage,
-                percentageData: [{color: '#3aacf3', value: openPercentage}, {color: 'rgba(183, 226, 255, 0.3)', value: 1 - openPercentage}]
-              }, {
-                id: 'iot',
-                radius: 30,
-                value: iotPercentage,
-                percentageData: [{color: '#5ad8a6', value: iotPercentage}, {color: 'rgba(183, 226, 255, 0.3)', value: 1 - iotPercentage}]
-              }, {
-                id: 'community',
-                radius: 15,
-                value: communityPercentage,
-                percentageData: [{color: '#ff6a00', value: communityPercentage}, {color: 'rgba(183, 226, 255, 0.3)', value: 1 - communityPercentage}]
-              }]
-              this.bubbleData = {
-                cityCode: e.feature.cityCode,
-                cityName: e.feature.cityName,
-                proportion: `${((e.feature.communityCount / this.allCommunityCount) * 100).toFixed(2)}%`,
-                communityCount: this.formatter(e.feature.communityCount),
-                openUserCount: this.formatter(e.feature.openUserCount),
-                iotDoorControlCount: this.formatter(e.feature.iotDoorControlCount)
+            .source(cityData.data.cityList, {
+              parser: {
+                type: 'json',
+                x: 'longitude',
+                y: 'latitude'
               }
-              const popup = new Popup({
-                offsets: [ 0, 0 ],
-                className: 'city-popup',
-                closeButton: false
-              })
+            })
+            .shape('circle')
+            .animate(true)
+            .size('count', [ 0, 45 ])
+            .color('count', [
+              '#3CA0FF',
+              '#3CA0FF',
+              '#3CA0FF',
+            ])
+            .active(true)
+            .style({
+              opacity: 0.5,
+              strokeWidth: 0
+            });
+        pointLayer.on('mousemove', e => {
+          clearTimeout(this.pointTimer)
+          this.pointTimer = setTimeout(() => {
+            const iotPercentage = (e.feature.iotDoorControlCount / cityData.data.iotdoorControlCount).toFixed(2) > 0.001 ? (e.feature.iotDoorControlCount / cityData.data.iotdoorControlCount).toFixed(2) : 0.001
+            const openPercentage = (e.feature.openUserCount / cityData.data.userCommunity).toFixed(2) > 0.001 ? (e.feature.openUserCount / cityData.data.userCommunity).toFixed(2) : 0.001
+            const communityPercentage = (e.feature.communityCount / cityData.data.communityCount).toFixed(2) > 0.001 ? (e.feature.communityCount / cityData.data.communityCount).toFixed(2) : 0.001
+            const ringData = [{
+              id: 'open',
+              radius: 45,
+              value: openPercentage,
+              percentageData: [{color: '#3aacf3', value: openPercentage}, {color: 'rgba(183, 226, 255, 0.3)', value: 1 - openPercentage}]
+            }, {
+              id: 'iot',
+              radius: 30,
+              value: iotPercentage,
+              percentageData: [{color: '#5ad8a6', value: iotPercentage}, {color: 'rgba(183, 226, 255, 0.3)', value: 1 - iotPercentage}]
+            }, {
+              id: 'community',
+              radius: 15,
+              value: communityPercentage,
+              percentageData: [{color: '#ff6a00', value: communityPercentage}, {color: 'rgba(183, 226, 255, 0.3)', value: 1 - communityPercentage}]
+            }]
+            this.bubbleData = {
+              cityCode: e.feature.cityCode,
+              cityName: e.feature.cityName,
+              proportion: `${((e.feature.communityCount / this.allCommunityCount) * 100).toFixed(2)}%`,
+              communityCount: this.formatter(e.feature.communityCount),
+              openUserCount: this.formatter(e.feature.openUserCount),
+              iotDoorControlCount: this.formatter(e.feature.iotDoorControlCount)
+            }
+            const popup = new Popup({
+              offsets: [ 0, 0 ],
+              className: 'city-popup',
+              closeButton: false
+            })
                 .setLnglat(e.lngLat)
                 .setDOMContent(this.$refs.popover)
-              scene.addPopup(popup);
-              this.initUserPopover(ringData)
-            }, 100)
-          });
-          scene.addLayer(pointLayer);
+            scene.addPopup(popup);
+            this.initUserPopover(ringData)
+          }, 100)
+        });
+        scene.addLayer(pointLayer);
       });
     },
-     // 用户城市气泡
+    // 用户城市气泡
     initUserPopover (arrList) {
       let canvas = document.getElementById('cityPopover');
       let ctx = canvas.getContext('2d');
@@ -824,7 +824,7 @@ export default {
     },
     // 设置DOM高度
     setElementHeight () {
-     clearTimeout(this.timer)
+      clearTimeout(this.timer)
       this.timer = setTimeout(() => {
         this.showLoading()
         this.height = `${(this.$refs.sectionRef.offsetHeight - 30) / 3}px`
@@ -885,7 +885,7 @@ export default {
 </script>
 
 <style lang="stylus" rel="stylesheet/stylus">
-  @import "./index.styl"
+@import "./index.styl"
 </style>
 
 <style lang="scss" scoped>
