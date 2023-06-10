@@ -12,8 +12,9 @@
         </div>
         <img class="full-img" @click="showFullScreen" src="@/assets/fullscreen.png" alt="">
       </div>
-      <div class="header-city">
-        <p>全国演唱会统计分析大屏</p>
+      <div class="header-city" @click="getTest">
+
+        <p>全国演唱会统计分析大屏区域： {{testCityname}}</p>
         <dv-decoration-5 style="width:300px;height:40px;" />
       </div>
       <div class="right">
@@ -133,9 +134,11 @@ import { defaults as defaultInteractions } from "ol/interaction";
 import Overlay from "ol/Overlay";
 /* 引入混合文件 */
 import { mapjs } from "../../utils/map";
+import {getRequest} from "@/utils/api";
 /* 引入组件 */
 // import mapChecks from "./components/mapChecks.vue";
 /* 引入vuex */
+
 import { mapState, mapMutations } from "vuex";
 export default {
   name: 'DataPreview',
@@ -146,6 +149,7 @@ export default {
   },
   data () {
     return {
+      testCityname:'',
       active: 2,
       isLoading: false,
       fullscreen: false,
@@ -459,6 +463,7 @@ export default {
   },
   mounted () {
     // this.initUserMap()
+
     /* 初始化地图生成方法 */
     this.mapInit();
     setTimeout(() => {
@@ -472,7 +477,21 @@ export default {
     })
   },
   methods: {
+    getTest(){
+      //初始化新闻总数
+
+        getRequest('/citycount/testCity').then(resp => {
+          if (resp) {
+           this.testCityname=resp;
+           console.log(this.testCityname);
+          }
+        })
+
+    },
     ...mapMutations(["setFull"]),
+
+    // 获取数据
+
     /* 初始化地图 */
     mapInit() {
       const topResolution = 360.0 / 512;
@@ -552,6 +571,8 @@ export default {
       this.setMap(this.fakePointData1, "hyytdw");
       this.setMap(this.fakePointData2, "hycl");
     },
+
+
     /* getCheck获取右下角checkllist */
     getCheck(checkList) {
       /* 若有弹窗关闭掉 */
@@ -840,7 +861,8 @@ export default {
         cityTimer = null
         deviceTimer = null
       })
-    }
+    },
+
   }
 }
 </script>

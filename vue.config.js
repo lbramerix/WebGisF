@@ -13,7 +13,9 @@ proxyObj['/']={
   }
 }
 
+
 const { defineConfig } = require('@vue/cli-service')
+const webpack = require("webpack");
 module.exports = defineConfig({
   transpileDependencies: true
 })
@@ -23,7 +25,19 @@ module.exports={
     host:'localhost',
     port:8080,
     proxy:proxyObj
-  }
+  },
+  productionSourceMap: false,
+  configureWebpack: {
+    plugins: [
+      new webpack.ProvidePlugin({
+        $: "jquery",
+        jquery: "jquery",
+        jQuery: "jquery",
+        "windows.jQuery": "jquery",
+      }),
+    ],
+
+  },
 }
 
 
