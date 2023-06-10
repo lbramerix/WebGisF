@@ -530,8 +530,8 @@ export default {
           zoom: 9.8,
           projection: "EPSG:4326",
           resolutions: resolutions,
-          maxZoom: 16,
-          minZoom: 6,
+          // maxZoom: 20,
+          // minZoom: 6,
         }),
         controls: new Control.defaults({
           attribution: false,
@@ -552,16 +552,16 @@ export default {
       //地图缩放触发
       this.map.getView().on("change:resolution", () => {
         let that = this;
-        if (that.map.getView().getZoom() >= 10) {
+        if (that.map.getView().getZoom() >= 1) {
           that.regionLayers.map((item) => {
             that.map.removeLayer(item);
           });
-          // that.addRegion();
+          that.addRegion();
         } else {
           that.regionLayers.map((item) => {
             that.map.removeLayer(item);
           });
-          // that.addModal();
+          that.addModal();
         }
       });
       /* 地图单击事件 */
