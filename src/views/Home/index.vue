@@ -40,6 +40,8 @@
             id="map"
         >
           <div id="mouse-position"/>
+<!--          <div id="scale" class="ol-scale-bar"/>-->
+          <div id="scale-bar"></div>
           <div id="popup" class="ol-popup">
             <a
                 href="#"
@@ -125,6 +127,7 @@ import { GaodeMap } from '@antv/l7-maps'
 import UserDataPreview from './components/UserDataPreview'
 import DeviceDataPreview from './components/DeviceDataPreview'
 import { cityData } from '../../utils/jsonData'
+
 /* 从openlayers 引入方法 */
 import * as Coordinate from "ol/coordinate"
 import Map from "ol/Map";
@@ -134,6 +137,7 @@ import View from "ol/View";
 import * as Control from "ol/control";
 import { defaults as defaultInteractions } from "ol/interaction";
 import Overlay from "ol/Overlay";
+
 /* 引入混合文件 */
 import { mapjs } from "../../utils/map";
 // import {getRequest} from "@/utils/api";
@@ -171,6 +175,9 @@ export default {
       map: null,
       //实例化鼠标位置控件（MousePosition）
       mousePositionControl: null,
+      //实例化比例尺控件（ScaleLine）
+      scaleLineControl: null,
+
       defaultList: [], //需要一直展示的图层
       overlay: null, //overlay信息
       selectedFeature: null, //选中的要素
@@ -521,6 +528,15 @@ export default {
         //未定义坐标的标记
         undefinedHTML: '&nbsp;'
       });
+      //实例化比例尺控件（ScaleLine）
+      this.scaleLineControl = new Control.ScaleLine({
+        //设置比例尺单位，degrees、imperial、us、nautical、metric（度量单位）
+        units: "metric",
+        //bar: true,
+        target: document.getElementById('scale-bar'),
+        className: 'ol-scale-line'
+      });
+
       this.map = new Map({
         target: "map", // 指向对象
         layers: [mapUrl],
@@ -537,7 +553,7 @@ export default {
           attribution: false,
           zoom: false,
           rotate: false,
-        }).extend([this.mousePositionControl]),//加载鼠标位置控件,
+        }).extend([this.scaleLineControl]).extend([this.mousePositionControl]),
         interactions: defaultInteractions({
           doubleClickZoom: false, //是否需要双击缩放
         }),
@@ -968,5 +984,23 @@ export default {
   content: "✖";
   color: #00eaff;
 }
+//.ol-scale-bar {
+//  float: left;
+//  color: rgb(255, 255, 255);
+//  position: absolute;
+//  bottom: 35px;
+//  width: 200px;
+//  height: 20px;
+//  /*在地图容器中的层，要设置z-index的值让其显示在地图上层*/
+//  z-index: 2000;
+//}
+#scale-bar {
+  float:left;
+  color: rgb(255, 255, 255);
+  position: absolute;
+  bottom:32px;
+  z-index:2000;
+}
+
 
 </style>

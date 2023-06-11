@@ -24,6 +24,12 @@
 <!--          </li>-->
 <!--        </ul>-->
 <!--      </div>-->
+      <dv-border-box-8 class="channel-proportion" :style="{'height': height}">
+        <p class="content-title">演唱会数量排名前十城市占比</p>
+        <div class="content">
+          <div id="channelCanvas" style="width: 100%; height: 225px"></div>
+        </div>
+      </dv-border-box-8>
       <div class="city-ranking">
         <p class="content-title">演唱会数量城市排行</p>
         <ScrollRankingBoard class="ranking" :config="rankingConfig"></ScrollRankingBoard>
@@ -68,12 +74,6 @@
 <!--          <div id="crowdCanvas"></div>-->
 <!--        </div>-->
 <!--      </dv-border-box-8>-->
-      <dv-border-box-8 class="channel-proportion" :style="{'height': height}">
-        <p class="content-title">演唱会数量排名前十城市占比</p>
-        <div class="content">
-          <div id="channelCanvas" style="width: 100%; height: 225px"></div>
-        </div>
-      </dv-border-box-8>
     </div>
   </div>
 </template>
