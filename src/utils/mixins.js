@@ -1,6 +1,6 @@
 import Vue from 'vue'
 
-Vue.mixin({
+export default Vue.mixin({
   methods: {
     // 错误
     $LoopShowTooltip (chart, chartOption, options) {

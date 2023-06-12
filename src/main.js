@@ -10,7 +10,7 @@ import store from './store'
 import ElementUI from 'element-ui'
 
 // 加载 element 组件库的样式
-// import locale from 'element-ui/lib/theme-chalk/index.css'
+import 'element-ui/lib/theme-chalk/index.css'
 
 
 import {
