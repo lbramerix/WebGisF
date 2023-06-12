@@ -24,9 +24,11 @@
         </div>
 <!--        <dv-decoration-3 style="width:250px;height:30px;" />-->
         <!-- 地图工具组件 -->
-        <button @click="addInteraction('Point')">绘制点</button>
-        <button @click="addInteraction('LineString')">绘制线</button>
-        <button @click="addInteraction('Polygon')">绘制多边形</button>
+<!--        <button @click="addInteraction('Point')">绘制点</button>-->
+<!--        <button @click="addInteraction('LineString')">绘制线</button>-->
+<!--        <button @click="addInteraction('Polygon')">绘制多边形</button>-->
+        <button @click="measureInteraction('LineString')">测距</button>
+        <button @click="measureInteraction('Polygon')">测面积</button>
         <button @click="clearMap()">清除</button>
         <button @click="exportMapPNG">导出</button>
         <button @click="downloadGeoJSON">导出json</button>
@@ -48,7 +50,8 @@
             id="map"
         >
           <div id="mouse-position"/>
-<!--          <div id="scale" class="ol-scale-bar"/>-->
+          <div id="location-control" class="ol-control ol-unselectable">{{ location }}</div>
+          <!--          <div id="scale" class="ol-scale-bar"/>-->
           <div id="scale-bar"></div>
           <div id="popup" class="ol-popup">
             <a
@@ -153,6 +156,10 @@ import { mapjs } from "../../utils/map";
 // import {getRequest} from "@/utils/api";
 
 import { mapState, mapMutations } from "vuex";
+
+const {getLength} = require("ol/sphere.js");
+const {getArea} = require("ol/sphere");
+
 export default {
   name: 'DataPreview',
   mixins: [mapjs],
@@ -180,6 +187,7 @@ export default {
         iotDoorControlCount: ''
       },
       map: null,
+      location: null,
       //实例化鼠标位置控件（MousePosition）
       mousePositionControl: null,
       //实例化比例尺控件（ScaleLine）
@@ -587,6 +595,7 @@ export default {
           doubleClickZoom: false, //是否需要双击缩放
         }),
       });
+
       // let that = this;
       const popup = document.getElementById("popup");
       this.overlay = new Overlay({
@@ -627,32 +636,43 @@ export default {
           }
         }.bind(this));
       }.bind(this));
-
-      // this.map.on("singleclick", (evt) => {
-      //   let content = document.getElementById("popup-content");
-      //   content.innerHTML = "";
-      //   that.overlay.setPosition(undefined);
-      //   //判断当前单击处是否有要素，捕获到要素时弹出popup
-      //   that.map.forEachFeatureAtPixel(evt.pixel, function (feature) {
-      //     if (
-      //         feature &&
-      //         !that.clickClose &&
-      //         (feature.values_.attribute || feature.values_.features.length > 0)
-      //     ) {
-      //       that.selectFeature(feature);
-      //     } else {
-      //       that.unSelect();
-      //     }
-      //   });
-      // });
       /* 添加矢量遮罩图层 */
       this.addModal();
       /* 模拟假数据打点 */
       this.setMap(this.fakePointData1, "hyytdw");
       this.setMap(this.fakePointData2, "hycl");
+      // 使用 geolocation 获取用户位置信息(经纬度信息)
+      // navigator.geolocation.getCurrentPosition(function (position) {
+      //   const location = [position.coords.longitude, position.coords.latitude];
+      //   map.getView().setCenter(location);
+      //   this.location = `当前位置：${location[0].toFixed(2)}, ${location[1].toFixed(2)}`;
+      //   alert(this.location);
+      // }.bind(this), function() {
+      //   this.location = '无法获取当前位置';
+      // }.bind(this));
+      /**具体地理信息*/
+      navigator.geolocation.getCurrentPosition(function (position) {
+        const location = [position.coords.longitude, position.coords.latitude];
+        this.map.getView().setCenter(location);
+        const key = '63255b86c156c06ab6d9c75e751cc521';
+        const url = `https://restapi.amap.com/v3/geocode/regeo?key=${key}&location=${location[0]},${location[1]}`;
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+              const address = data.regeocode.formatted_address;
+              this.location = `当前位置：${address}`;
+            })
+            .catch(error => {
+              console.error('获取位置信息出错：', error);
+              this.location = '无法获取当前位置1';
+            });
+      }.bind(this), function() {
+        this.location = '无法获取当前位置2';
+      }.bind(this));
+
     },
     addInteraction(type) {
-      this.clearMap();
+      // this.clearMap();
 
       const draw = new Draw({
         source: this.vectorSource,
@@ -695,6 +715,70 @@ export default {
       this.vectorSource.clear();
 
       this.measurementResult = null;
+    },
+    measureInteraction(type) {
+      this.clearMap();
+      const draw = new Draw({
+        source: this.vectorSource,
+        type,
+      });
+      if(type=="LineString"){
+        draw.on('drawend', (event) => {
+          // 获取绘制的线段
+          const feature = event.feature;
+
+          // 获取线段长度
+          // const length = this.getLength(feature.getGeometry());
+          const geometry = feature.getGeometry();
+          const length = getLength(geometry, {
+            projection: 'EPSG:4326', // 指定使用 WGS 84 坐标系进行测量
+            radius: 6378137, // 指定赤道半径，以便进行球面距离计算
+          });
+
+          // 显示测量结果
+          alert(`线段长度为: ${length.toFixed(2)} 米`);
+          // 清除绘制交互和绘制图形
+          // this.source.removeFeature(feature);
+          this.measureType = null;
+          this.draw = null;
+        });
+        this.draw = draw;
+        this.map.addInteraction(draw);
+      }else{
+        draw.on('drawend', (event) => {
+          const geometry = event.feature.getGeometry();
+          const area = getArea(geometry, {
+            projection: 'EPSG:4326', // 指定使用 WGS 84 坐标系进行测量
+            radius: 6378137, // 指定赤道半径，以便进行球面面积计算
+          });
+
+          // 显示测量结果
+          alert(`面积为: ${area.toFixed(2)} 平方米`);
+
+          // 清除绘制交互和绘制图形
+          // this.source.removeFeature(event.feature);
+          this.measureType = null;
+          this.draw = null;
+        });
+        this.draw = draw;
+        this.map.addInteraction(draw);
+      }
+
+    },
+    getLength(geometry) {
+      // 获取线段的长度
+      return geometry.getLength();
+    },
+    getArea(geometry) {
+      // 获取多边形的面积
+      const coordinates = geometry.getCoordinates()[0];
+      let area = 0;
+      for (let i = 0; i < coordinates.length - 1; i++) {
+        const p1 = coordinates[i];
+        const p2 = coordinates[i + 1];
+        area += (p2[0] - p1[0]) * (p2[1] + p1[1]) / 2;
+      }
+      return Math.abs(area);
     },
     /**导出地图PNG格式*/
     exportMapPNG() {
@@ -1078,9 +1162,9 @@ export default {
         deviceTimer = null
       })
     },
+  },
+};
 
-  }
-}
 </script>
 
 <style lang="stylus" rel="stylesheet/stylus">
@@ -1184,6 +1268,14 @@ export default {
   bottom:32px;
   z-index:2000;
 }
+ #location-control {
+   position: absolute;
+   bottom: 10px;
+   right: 10px;
+   color: #ffffff;
+   /*在地图容器中的层，要设置z-index的值让其显示在地图上层*/
+   z-index: 2000;
+ }
 
 
 </style>
