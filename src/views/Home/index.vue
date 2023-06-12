@@ -1267,6 +1267,8 @@ export default {
   position: absolute;
   bottom:32px;
   z-index:2000;
+  background-image: linear-gradient(45deg, rgba(100,100,100,0.8) 25%, transparent 25%, transparent 50%, rgba(100,100,100,0.8) 50%, rgba(100,100,100,0.8) 75%, transparent 75%, transparent);
+  background-size: 28.28px 28.28px;
 }
  #location-control {
    position: absolute;
