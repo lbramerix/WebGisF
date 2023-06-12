@@ -9,7 +9,7 @@
             style="vertical-align: middle; margin-right: 5px"
             src="@/assets/images/tl_hyytdw.png"
           />
-          货运源头单位</el-checkbox
+          1</el-checkbox
         >
         <el-checkbox class="check-box-item" label="hycl"
           ><img
@@ -18,7 +18,7 @@
             style="vertical-align: middle; margin-right: 5px"
             src="@/assets/images/tl_hycl.png"
           />
-          货运车辆</el-checkbox
+          1</el-checkbox
         >
       </el-checkbox-group>
     </div>

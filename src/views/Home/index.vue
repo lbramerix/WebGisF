@@ -15,14 +15,19 @@
       <div class="header-city" @click="getTest">
 
         <p>全国演唱会统计分析大屏区域： {{testCityname}}</p>
-        <dv-decoration-5 style="width:300px;height:40px;" />
+        <dv-decoration-5 style="width:600px;height:40px;" />
       </div>
       <div class="right">
         <div>
           <p :class="{'active': active === 2}" @click="handleChangeType(2)">演唱会信息</p>
           <p :class="{'active': active === 1}" @click="handleChangeType(1)">艺人统计</p>
         </div>
-        <dv-decoration-3 style="width:250px;height:30px;" />
+<!--        <dv-decoration-3 style="width:250px;height:30px;" />-->
+        <!-- 地图工具组件 -->
+        <button @click="addInteraction('Point')">绘制点</button>
+        <button @click="addInteraction('LineString')">绘制线</button>
+        <button @click="addInteraction('Polygon')">绘制多边形</button>
+        <button @click="clearMap()">清除</button>
       </div>
     </header>
     <dv-decoration-10 style="width:100%;height:5px;" />
@@ -51,16 +56,6 @@
             ></a>
             <div id="popup-content" class="popup-content"></div>
           </div>
-          <!--      <map-checks v-show="buttonsIndex == 1" @setCheck="getCheck"></map-checks>-->
-          <!--      <div class="control-buttons">-->
-          <!--        <div-->
-          <!--          v-for="(iconItem, iconIndex) in buttons"-->
-          <!--          :key="iconIndex + 'buttons'"-->
-          <!--          @click="clickButtons(iconIndex)"-->
-          <!--        >-->
-          <!--          <img :src="iconItem.img" />-->
-          <!--        </div>-->
-          <!--      </div>-->
         </div>
       </div>
       <!-- 全国用户数据 -->
@@ -135,6 +130,15 @@ import TileLayer from "ol/layer/Tile";
 import XYZ from "ol/source/XYZ";
 import View from "ol/View";
 import * as Control from "ol/control";
+import VectorLayer from 'ol/layer/Vector';
+import VectorSource from 'ol/source/Vector';
+import Fill from 'ol/style/Fill';
+import Style from 'ol/style/Style';
+import Stroke from 'ol/style/Stroke';
+import Circle from 'ol/style/Circle';
+import Draw from 'ol/interaction/Draw';
+import Modify from 'ol/interaction/Modify';
+import Snap from 'ol/interaction/Snap';
 import { defaults as defaultInteractions } from "ol/interaction";
 import Overlay from "ol/Overlay";
 
@@ -505,6 +509,27 @@ export default {
 
     /* 初始化地图 */
     mapInit() {
+      this.vectorSource = new VectorSource({
+        features: [],
+      });
+      const vectorLayer = new VectorLayer({
+        source: this.vectorSource,
+        style: new Style({
+          fill: new Fill({
+            color: 'rgba(255, 255, 255, 0.2)',
+          }),
+          stroke: new Stroke({
+            color: '#ffcc33',
+            width: 2,
+          }),
+          image: new Circle({
+            radius: 7,
+            fill: new Fill({
+              color: '#ffcc33',
+            }),
+          }),
+        }),
+      });
       const topResolution = 360.0 / 512;
       const resolutions = [];
       for (let zoom = 0; zoom < 22; zoom++) {
@@ -539,7 +564,7 @@ export default {
 
       this.map = new Map({
         target: "map", // 指向对象
-        layers: [mapUrl],
+        layers: [mapUrl,vectorLayer],
         view: new View({
           center: [120.93, 30.46],
           padding: [100, 100, 100, 100],
@@ -558,7 +583,7 @@ export default {
           doubleClickZoom: false, //是否需要双击缩放
         }),
       });
-      let that = this;
+      // let that = this;
       const popup = document.getElementById("popup");
       this.overlay = new Overlay({
         autoPan: true,
@@ -581,31 +606,92 @@ export default {
         }
       });
       /* 地图单击事件 */
-      this.map.on("singleclick", (evt) => {
+      this.map.on("singleclick", function(evt) {
         let content = document.getElementById("popup-content");
         content.innerHTML = "";
-        that.overlay.setPosition(undefined);
+        this.overlay.setPosition(undefined);
         //判断当前单击处是否有要素，捕获到要素时弹出popup
-        that.map.forEachFeatureAtPixel(evt.pixel, function (feature) {
+        this.map.forEachFeatureAtPixel(evt.pixel, function(feature) {
           if (
               feature &&
-              !that.clickClose &&
-              (feature.values_.attribute || feature.values_.features.length > 0)
+              !this.clickClose &&
+              (feature.values_.attribute || (feature.values_ && feature.values_.features && feature.values_.features.length > 0))
           ) {
-            that.selectFeature(feature);
+            this.selectFeature(feature);
           } else {
-            that.unSelect();
+            this.unSelect();
           }
-        });
-      });
+        }.bind(this));
+      }.bind(this));
+
+      // this.map.on("singleclick", (evt) => {
+      //   let content = document.getElementById("popup-content");
+      //   content.innerHTML = "";
+      //   that.overlay.setPosition(undefined);
+      //   //判断当前单击处是否有要素，捕获到要素时弹出popup
+      //   that.map.forEachFeatureAtPixel(evt.pixel, function (feature) {
+      //     if (
+      //         feature &&
+      //         !that.clickClose &&
+      //         (feature.values_.attribute || feature.values_.features.length > 0)
+      //     ) {
+      //       that.selectFeature(feature);
+      //     } else {
+      //       that.unSelect();
+      //     }
+      //   });
+      // });
       /* 添加矢量遮罩图层 */
       this.addModal();
       /* 模拟假数据打点 */
       this.setMap(this.fakePointData1, "hyytdw");
       this.setMap(this.fakePointData2, "hycl");
     },
+    addInteraction(type) {
+      this.clearMap();
 
+      const draw = new Draw({
+        source: this.vectorSource,
+        type,
+      });
 
+      this.map.addInteraction(draw);
+
+      this.draw = draw;
+
+      const modify = new Modify({
+        source: this.vectorSource,
+      });
+
+      this.map.addInteraction(modify);
+
+      this.modify = modify;
+
+      const snap = new Snap({
+        source: this.vectorSource,
+      });
+
+      this.map.addInteraction(snap);
+
+      this.snap = snap;
+    },
+    clearMap() {
+      if (this.draw) {
+        this.map.removeInteraction(this.draw);
+      }
+
+      if (this.modify) {
+        this.map.removeInteraction(this.modify);
+      }
+
+      if (this.snap) {
+        this.map.removeInteraction(this.snap);
+      }
+
+      this.vectorSource.clear();
+
+      this.measurementResult = null;
+    },
     /* getCheck获取右下角checkllist */
     getCheck(checkList) {
       /* 若有弹窗关闭掉 */
