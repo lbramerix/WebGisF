@@ -28,6 +28,9 @@
         <button @click="addInteraction('LineString')">绘制线</button>
         <button @click="addInteraction('Polygon')">绘制多边形</button>
         <button @click="clearMap()">清除</button>
+        <button @click="exportMapPNG">导出</button>
+        <button @click="downloadGeoJSON">导出json</button>
+
       </div>
     </header>
     <dv-decoration-10 style="width:100%;height:5px;" />
@@ -139,15 +142,15 @@ import Circle from 'ol/style/Circle';
 import Draw from 'ol/interaction/Draw';
 import Modify from 'ol/interaction/Modify';
 import Snap from 'ol/interaction/Snap';
+import domtoimage from 'dom-to-image';
 import { defaults as defaultInteractions } from "ol/interaction";
 import Overlay from "ol/Overlay";
+import { GeoJSON } from 'ol/format';
+import jsPDF from 'jspdf';
 
 /* 引入混合文件 */
 import { mapjs } from "../../utils/map";
 // import {getRequest} from "@/utils/api";
-/* 引入组件 */
-// import mapChecks from "./components/mapChecks.vue";
-/* 引入vuex */
 
 import { mapState, mapMutations } from "vuex";
 export default {
@@ -537,6 +540,7 @@ export default {
       }
       let mapUrl = new TileLayer({
         source: new XYZ({
+          crossOrigin: 'anonymous',
           url: "http://map.geoq.cn/ArcGIS/rest/services/ChinaOnlineStreetPurplishBlue/MapServer/tile/{z}/{y}/{x}",
         }),
       });
@@ -691,6 +695,99 @@ export default {
       this.vectorSource.clear();
 
       this.measurementResult = null;
+    },
+    /**导出地图PNG格式*/
+    exportMapPNG() {
+      // 获取地图容器元素
+      const mapElement = document.getElementById('map');
+      // 将地图容器转换成图片并下载
+      domtoimage.toPng(mapElement)
+          .then(function (dataUrl) {
+            // 创建一个 <a> 标签下载
+            const link = document.createElement('a');
+            link.download = 'map.png';
+            link.href = dataUrl;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          })
+          .catch(function (error) {
+            console.error('导出地图失败:', error);
+          });
+    },
+    /**导出地图JPG格式*/
+    exportMapJPG() {
+      // 获取地图容器元素
+      const mapElement = document.getElementById('map');
+      domtoimage.toJpeg(mapElement, { quality: 0.95 })
+          .then(function (dataUrl) {
+            // 创建一个 <a> 标签下载
+            const link = document.createElement('a');
+            link.download = 'map.jpg';
+            link.href = dataUrl;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          })
+          .catch(function (error) {
+            console.error('导出地图失败:', error);
+          });
+    },
+    /**导出地图PDF格式*/
+    exportMapPDF() {
+      // 获取地图容器元素
+      const mapElement = document.getElementById('map');
+      // 将地图容器转换为图像并导出为 PDF
+      domtoimage.toPng(mapElement)
+          .then(function (dataUrl) {
+            // 创建新的 PDF 实例
+            const pdf = new jsPDF('l', 'mm', [297, 210]);
+
+            // 将图像添加到 PDF 文档中
+            pdf.addImage(dataUrl, 'PNG', 10, 10, 277, 190);
+
+            // 下载生成的 PDF 文件
+            pdf.save('map.pdf');
+          })
+          .catch(function (error) {
+            console.error('导出地图失败:', error);
+          });
+    },
+    /**导出地图JSON格式*/
+    downloadGeoJSON() {
+      const features = [];
+      this.map.getLayers().forEach(layer => {
+        if (layer instanceof VectorLayer) {
+          layer.getSource().getFeatures().forEach(feature => {
+            features.push(feature);
+          });
+        }
+      });
+
+      const geojsonFormat = new GeoJSON();
+      const geojsonObject = geojsonFormat.writeFeaturesObject(features);
+      const geojsonStr = JSON.stringify(geojsonObject);
+
+      const filename = 'map.json';
+      const data = JSON.stringify(geojsonStr, null, 2);
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = window.URL.createObjectURL(blob);
+
+      // 使用 XMLHttpRequest 对象下载文件
+      const xhr = new XMLHttpRequest();
+      xhr.open('GET', url, true);
+      xhr.setRequestHeader('Accept', 'application/json');
+      xhr.responseType = 'blob';
+
+      xhr.onload = function () {
+        const blob = new Blob([xhr.response], { type: 'application/json' });
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
+      };
+
+      xhr.send();
     },
     /* getCheck获取右下角checkllist */
     getCheck(checkList) {
