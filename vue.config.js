@@ -21,6 +21,7 @@ module.exports = defineConfig({
 })
 
 module.exports={
+  lintOnSave: false, //关闭eslint
   devServer:{
     host:'localhost',
     port:8080,
@@ -41,4 +42,18 @@ module.exports={
 }
 
 
+const path = require('path');
 
+module.exports = {
+  chainWebpack: (config) => {
+    config.module
+        .rule('ts')
+        .test(/\.ts$/)
+        .use('ts-loader')
+        .loader('ts-loader')
+        .options({
+          appendTsSuffixTo: [/\.vue$/],
+          configFile: path.resolve(__dirname, 'tsconfig.json'), // 指定 tsconfig.json 路径
+        });
+  },
+};
