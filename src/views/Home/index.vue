@@ -8,7 +8,7 @@
     <header>
       <div class="header-back">
         <div>
-          <img class="img" src="@/assets/home_back.png" alt="">
+          <img class="img" src="@/assets/home_back.png" alt="" @click="toPersonal">
         </div>
         <img class="full-img" @click="showFullScreen" src="@/assets/fullscreen.png" alt="">
       </div>
@@ -27,12 +27,12 @@
 <!--        <button @click="addInteraction('Point')">绘制点</button>-->
 <!--        <button @click="addInteraction('LineString')">绘制线</button>-->
 <!--        <button @click="addInteraction('Polygon')">绘制多边形</button>-->
-        <button @click="measureInteraction('LineString')">测距</button>
-        <button @click="measureInteraction('Polygon')">测面积</button>
-        <button @click="clearMap()">清除</button>
-        <button @click="exportMapPNG">导出</button>
-        <button @click="downloadGeoJSON">导出json</button>
-
+<!--        <button @click="measureInteraction('LineString')">测距</button>-->
+<!--        <button @click="measureInteraction('Polygon')">测面积</button>-->
+<!--        <button @click="clearMap()">清除</button>-->
+<!--        <button @click="exportMapPNG">导出</button>-->
+<!--        <button @click="downloadGeoJSON">导出json</button>-->
+        <button @click="test">导出json</button>
       </div>
     </header>
     <dv-decoration-10 style="width:100%;height:5px;" />
@@ -92,6 +92,18 @@
               v-if="active === 2"
               :riseImage="riseImage"
               :declineImage="declineImage"
+              @search="handleSearch"
+              @addInteractionPoint="addInteraction('Point')"
+              @addInteractionLine="addInteraction('LineString')"
+              @addInteractionPolygon="addInteraction('Polygon')"
+              @measureInteractionLine="measureInteraction('LineString')"
+              @measureInteractionPolygon="measureInteraction('Polygon')"
+              @clear="clearMap()"
+              @exportMapPNG="exportMapPNG"
+              @exportMapJPG="exportMapJPG"
+              @exportMapPDF="exportMapPDF"
+              @exportMapJSON="downloadGeoJSON"
+              @dateSearch="dateSearch"
           ></UserDataPreview>
           <DeviceDataPreview
               v-if="active === 1"
@@ -99,7 +111,8 @@
               :fullscreen="fullscreen"
               :riseImage="riseImage"
               :declineImage="declineImage"
-          ></DeviceDataPreview>
+          >
+          </DeviceDataPreview>
         </div>
 
       </keep-alive>
@@ -128,6 +141,8 @@ import { GaodeMap } from '@antv/l7-maps'
 import UserDataPreview from './components/UserDataPreview'
 import DeviceDataPreview from './components/DeviceDataPreview'
 import { cityData } from '../../utils/jsonData'
+import moment from 'moment';
+
 
 /* 从openlayers 引入方法 */
 import * as Coordinate from "ol/coordinate"
@@ -153,22 +168,24 @@ import jsPDF from 'jspdf';
 
 /* 引入混合文件 */
 import { mapjs } from "../../utils/map";
-// import {getRequest} from "@/utils/api";
+import {getRequest} from "@/utils/api";
 
 import { mapState, mapMutations } from "vuex";
 
 const {getLength} = require("ol/sphere.js");
+const axios = require("axios");
 const {getArea} = require("ol/sphere");
 
 export default {
   name: 'DataPreview',
   mixins: [mapjs],
-  components: { UserDataPreview, DeviceDataPreview },
+  components: { UserDataPreview, DeviceDataPreview},
   computed: {
     ...mapState(["isFull"]),
   },
   data () {
     return {
+      selectedOptions: [], // 选择的值
       testCityname:'',
       active: 2,
       isLoading: false,
@@ -201,295 +218,13 @@ export default {
         { img: require("@/assets/images/buttons1.png") },
       ], //control buttons icons
       buttonsIndex: -1, //control buttons index
-      /* 制造假数据 */
-      fakePointData2: [
-        {
-          lon: 120.95,
-          lat: 30.53,
-          name: "浙F62785",
-          a1: "6轴",
-          b1: "2023-12-10",
-          c1: "13514892915",
-          a2: "货3403222104447",
-          b2: "2022-07-09 10:09:39",
-          c2: "海盐县百顺建材有限公司",
-          d1: "浙江省嘉兴市海盐县秦山街道丰山村小牌洋",
-          img: require("@/assets/images/fake_car.png"),
-        },
-        {
-          lon: 120.9,
-          lat: 30.43,
-          name: "浙F33820",
-          a1: "6轴",
-          b1: "2023-8-19",
-          c1: "13878239402",
-          a2: "货340290458872",
-          b2: "2022-07-020 12:49:38",
-          c2: "海盐县百顺建材有限公司",
-          d1: "浙江省嘉兴市海盐县秦山街道丰山村小牌洋",
-          img: require("@/assets/images/fake_car.png"),
-        },
-      ],
-      fakePointData1: [
-        {
-          lon: 120.777771,
-          lat: 30.537012,
-          name: "嘉兴征宇混凝土制品有限公司", // 企业名称
-          a1: "百步镇", // 所属街道
-          b1: "13辆", // 进入过车数
-          c1: "何群丽", // 联系人
-          a2: "散装办", // 监管单位
-          b2: "2辆", // 自查自纠数
-          c2: "13758385003", // 联系电话
-          d1: "海盐县百步镇龙潭屿666号", // 单位地址
-          img: require("@/assets/images/fake_dw.png"),
-        },
-        {
-          lon: 120.77,
-          lat: 30.53,
-          name: "嘉兴超盛建材股份有限公司",
-          a1: "百步镇", // 所属街道
-          b1: "0辆", // 进入过车数
-          c1: "沈张林", // 联系人
-          a2: "县经信局", // 监管单位
-          b2: "0辆", // 自查自纠数
-          c2: "13606733698", // 联系电话
-          d1: "海盐县百步镇白联村", // 单位地址
-          img: require("@/assets/images/fake_dw.png"),
-        },
-        {
-          lon: 120.91,
-          lat: 30.38,
-          name: "浙江林龙港口有限公司",
-          a1: "澉浦镇", // 所属街道
-          b1: "0辆", // 今日过车数
-          c1: "吴叶芳", // 联系人
-          a2: "嘉兴市港务局", // 监管单位
-          b2: "0辆", // 自查自纠数
-          c2: "13605731922", // 联系电话
-          d1: "海盐县澉浦镇澉南村", // 单位地址
-          img: require("@/assets/images/fake_dw.png"),
-        },
-        {
-          lon: 121.02193,
-          lat: 30.57006,
-          name: "嘉兴港海盐码头有限公司",
-          a1: "西塘桥街道", // 所属街道
-          b1: "0辆", // 今日过车数
-          c1: "吉永祥", // 联系人
-          a2: "嘉兴市港务管理局", // 监管单位
-          b2: "0辆", // 自查自纠数
-          c2: "13511399016", // 联系电话
-          d1: "西塘桥街道海港大道18号", // 单位地址
-          img: require("@/assets/images/fake_dw.png"),
-        },
-        {
-          lon: 121.02,
-          lat: 30.56,
-          name: "浙江协和港务有限公司",
-          a1: "西塘桥街道", // 所属街道
-          b1: "12辆", // 今日过车数
-          c1: "黄斌", // 联系人
-          a2: "嘉兴市港务管理局", // 监管单位
-          b2: "0辆", // 自查自纠数
-          c2: "0573-86588085", // 联系电话
-          d1: "海港大道18号", // 单位地址
-          img: require("@/assets/images/fake_dw.png"),
-        },
-        {
-          lon: 121.01,
-          lat: 30.6,
-          name: "浙江山鹰纸业有限公司",
-          a1: "西塘桥街道", // 所属街道
-          b1: "0辆", // 今日过车数
-          c1: "陈光", // 联系人
-          a2: "经济发展办公室", // 监管单位
-          b2: "0辆", // 自查自纠数
-          c2: "0573-86861243", // 联系电话
-          d1: "海港大道2009号", // 单位地址
-          img: require("@/assets/images/fake_dw.png"),
-        },
-        {
-          lon: 121.00422,
-          lat: 30.55871,
-          name: "浙江协和首信钢业有限公司",
-          a1: "西塘桥街道", // 所属街道
-          b1: "0辆", // 今日过车数
-          c1: "邵益华", // 联系人
-          a2: "县经信局", // 监管单位
-          b2: "0辆", // 自查自纠数
-          c2: "18257366666", // 联系电话
-          d1: "海盐县西塘桥街道杭州湾大道3889号", // 单位地址
-          img: require("@/assets/images/fake_dw.png"),
-        },
-        {
-          lon: 120.927879,
-          lat: 30.457932,
-          name: "海盐秦山南方水泥有限公司",
-          a1: "秦山街道", // 所属街道
-          b1: "5辆", // 今日过车数
-          c1: "沈元明", // 联系人
-          a2: "县经信局", // 监管单位
-          b2: "0辆", // 自查自纠数
-          c2: "13819736711", // 联系电话
-          d1: "海盐县秦山街道何家桥综合物流园区", // 单位地址
-          img: require("@/assets/images/fake_dw.png"),
-        },
-        {
-          lon: 120.834206,
-          lat: 30.572267,
-          name: "海盐海潮水泥制管股份有限公司",
-          a1: "沈荡镇", // 所属街道
-          b1: "0辆", // 进入过车数
-          c1: "林加生", // 联系人
-          a2: "海盐县住建局", // 监管单位
-          b2: "0辆", // 自查自纠数
-          c2: "15990330813", // 联系电话
-          d1: "沈荡大洋路", // 单位地址
-          img: require("@/assets/images/fake_dw.png"),
-        },
-        {
-          lon: 120.815781,
-          lat: 30.590014,
-          name: "海盐沈荡南方混凝土有限公司",
-          a1: "沈荡镇", // 所属街道
-          b1: "0辆", // 今日过车数
-          c1: "权森", // 联系人
-          a2: "县住建局", // 监管单位
-          b2: "0辆", // 自查自纠数
-          c2: "86722365", // 联系电话
-          d1: "海盐县沈荡镇横泾村", // 单位地址
-          img: require("@/assets/images/fake_dw.png"),
-        },
-        {
-          lon: 120.844139,
-          lat: 30.578161,
-          name: "嘉兴创奇环保材料有限公司",
-          a1: "沈荡镇", // 所属街道
-          b1: "0辆", // 今日过车数
-          c1: "巢生", // 联系人
-          a2: "经信局", // 监管单位
-          b2: "0辆", // 自查自纠数
-          c2: "13901703913", // 联系电话
-          d1: "海盐县沈荡镇中钱村", // 单位地址
-          img: require("@/assets/images/fake_dw.png"),
-        },
-        /* {
-					lon: 120.864444,
-					lat: 30.486563,
-					name: '嘉兴广益建材股份有限公司',
-					img: require('@/assets/images/fake_dw.png')
-				}, */
-        {
-          lon: 120.844398,
-          lat: 30.451412,
-          name: "海盐南方水泥有限公司",
-          a1: "通元镇", // 所属街道
-          b1: "16辆", // 今日过车数
-          c1: "沈元明", // 联系人
-          a2: "县经信局", // 监管单位
-          b2: "2辆", // 自查自纠数
-          c2: "13819736712", // 联系电话
-          d1: "海盐县通元镇石泉集镇", // 单位地址
-          img: require("@/assets/images/fake_dw.png"),
-        },
-        {
-          lon: 120.864246,
-          lat: 30.487808,
-          name: "浙江兆弟桩业有限公司",
-          a1: "海盐县经济和信息化局", // 所属街道
-          b1: "0辆", // 进入过车数
-          c1: "朱建红", // 联系人
-          a2: "散装办", // 监管单位
-          b2: "0辆", // 自查自纠数
-          c2: "0573-86610123", // 联系电话
-          d1: "通元滕泾金星组", // 单位地址
-          img: require("@/assets/images/fake_dw.png"),
-        },
-        {
-          lon: 120.927719,
-          lat: 30.55002,
-          name: "中天浦发（海盐）线材制造有限公司",
-          a1: "望海街道", // 所属街道
-          b1: "6辆", // 进入过车数
-          c1: "杨忠明", // 联系人
-          a2: "海盐县港行管理处", // 监管单位
-          b2: "0辆", // 自查自纠数
-          c2: "13706838859", // 联系电话
-          d1: "盐沈线升界桥东", // 单位地址
-          img: require("@/assets/images/fake_dw.png"),
-        },
-        {
-          lon: 120.959214,
-          lat: 30.565627,
-          name: "浙江百纳仓储管理有限公司",
-          a1: "望海街道", // 所属街道
-          b1: "0辆", // 今日过车数
-          c1: "王明为", // 联系人
-          a2: "县交通运输局", // 监管单位
-          b2: "0辆", // 自查自纠数
-          c2: "13906834589", // 联系电话
-          d1: "海盐县望海街道盐东区静工路18号", // 单位地址
-          img: require("@/assets/images/fake_dw.png"),
-        },
-        {
-          lon: 120.89,
-          lat: 30.52,
-          name: "海盐汇强桩业股份有限公司",
-          a1: "于城镇", // 所属街道
-          b1: "8辆", // 今日过车数
-          c1: "薛丁飞", // 联系人
-          a2: "住建局", // 监管单位
-          b2: "0辆", // 自查自纠数
-          c2: "0573-89051225", // 联系电话
-          d1: "盐湖公路813号", // 单位地址
-          img: require("@/assets/images/fake_dw.png"),
-        },
-        {
-          lon: 120.889351,
-          lat: 30.51731,
-          name: "海盐县秦山混凝土股份有限公司",
-          a1: "于城镇", // 所属街道
-          b1: "0辆", // 进入过车数
-          c1: "刘建红", // 联系人
-          a2: "散装办", // 监管单位
-          b2: "0辆", // 自查自纠数
-          c2: "13586494117", // 联系电话
-          d1: "盐湖公路813号", // 单位地址
-          img: require("@/assets/images/fake_dw.png"),
-        },
-        {
-          lon: 120.89,
-          lat: 30.54,
-          name: "浙江祥龙物流有限公司",
-          a1: "于城镇", // 所属街道
-          b1: "0辆", // 进入过车数
-          c1: "陶海翔", // 联系人
-          a2: "县交通运输局", // 监管单位
-          b2: "0辆", // 自查自纠数
-          c2: "13857329882", // 联系电话
-          d1: "海盐县于城镇八字村", // 单位地址
-          img: require("@/assets/images/fake_dw.png"),
-        },
-        {
-          lon: 120.857851,
-          lat: 30.480465,
-          name: "嘉兴广益建材股份有限公司",
-          a1: "通元镇", // 所属街道
-          b1: "0辆", // 进入过车数
-          c1: "金雪峰", // 联系人
-          a2: "经信局", // 监管单位
-          b2: "0辆", // 自查自纠数
-          c2: "-", // 联系电话
-          d1: "嘉南线滕泾村西", // 单位地址
-          img: require("@/assets/images/fake_dw.png"),
-        },
-      ],
+      /** 所有演唱会数据 */
+      allConcert:[],
+      searchConcert:[],
     }
   },
   mounted () {
     // this.initUserMap()
-
     /* 初始化地图生成方法 */
     this.mapInit();
     setTimeout(() => {
@@ -503,21 +238,69 @@ export default {
     })
   },
   methods: {
+    // 处理搜索事件
+    handleSearch(keyword) {
+      console.log("搜索关键词为:", keyword);
+    },
+    dateSearch(date){
+      // console.log('/concert/getConcertByTime?time='+moment(date).format('YYYY-MM-DD'));
+      /* 若有弹窗关闭掉 */
+      this.unSelect();
+      this.checkedListArr = this.allConcert; //把获取到的数据缓存起来
+      const layerNames = [];
+      //不能让默认的图层被隐藏
+      let allList = this.allConcert.concat(this.defaultList);
+      this.checkedList = allList;
+      this.layers.map((item) => {
+        if (allList.indexOf(item.getProperties().name) === -1) {
+          item.setVisible(false);
+        } else {
+          item.setVisible(true);
+        }
+        layerNames.push(item.getProperties().name);
+      });
+      axios.get('/concert/getConcertByTime?time='+moment(date).format('YYYY-MM-DD'))
+          .then(response => {
+            this.searchConcert = response.data;
+            this.setMap(this.searchConcert, "hyytdw");
+          })
+          .catch(error => {
+            console.log('获取演唱会数据失败：', error);
+          });
+    },
+    test(){
+      /* 若有弹窗关闭掉 */
+      this.unSelect();
+      this.checkedListArr = this.allConcert; //把获取到的数据缓存起来
+      const layerNames = [];
+      //不能让默认的图层被隐藏
+      let allList = this.allConcert.concat(this.defaultList);
+      this.checkedList = allList;
+      this.layers.map((item) => {
+        if (allList.indexOf(item.getProperties().name) === -1) {
+          item.setVisible(false);
+        } else {
+          item.setVisible(true);
+        }
+        layerNames.push(item.getProperties().name);
+      });
+    },
     getTest(){
       //初始化新闻总数
-
       // getRequest('/citycount/testCity').then(resp => {
       //   if (resp) {
       //     this.testCityname=resp;
       //     console.log(this.testCityname);
       //   }
       // })
-
     },
     ...mapMutations(["setFull"]),
 
-    // 获取数据
+    toPersonal:function(){
+      this.$router.push('/personal');
+    },
 
+    // 获取数据
     /* 初始化地图 */
     mapInit() {
       this.vectorSource = new VectorSource({
@@ -638,9 +421,16 @@ export default {
       }.bind(this));
       /* 添加矢量遮罩图层 */
       this.addModal();
-      /* 模拟假数据打点 */
-      this.setMap(this.fakePointData1, "hyytdw");
-      this.setMap(this.fakePointData2, "hycl");
+      axios.get('/concert/getAllConcert')
+          .then(response => {
+            this.allConcert = response.data;
+            console.log("aaaaaaaaaaaaaaaaaaa");
+            console.log(this.allConcert);
+            this.setMap(this.allConcert, "hyytdw");
+          })
+          .catch(error => {
+            console.log('获取演唱会数据失败：', error);
+          });
       // 使用 geolocation 获取用户位置信息(经纬度信息)
       // navigator.geolocation.getCurrentPosition(function (position) {
       //   const location = [position.coords.longitude, position.coords.latitude];
@@ -654,7 +444,7 @@ export default {
       navigator.geolocation.getCurrentPosition(function (position) {
         const location = [position.coords.longitude, position.coords.latitude];
         this.map.getView().setCenter(location);
-        const key = '63255b86c156c06ab6d9c75e751cc521';
+        const key = '6a45d9d0aa2a626163dd58fed49c2c56';
         const url = `https://restapi.amap.com/v3/geocode/regeo?key=${key}&location=${location[0]},${location[1]}`;
         fetch(url)
             .then(response => response.json())
@@ -671,6 +461,19 @@ export default {
       }.bind(this));
 
     },
+    // 所有演唱会数据
+    initAllConcert () {
+      axios.get('/concert/getAllConcert')
+          .then(response => {
+            this.allConcert = response.data;
+            console.log("aaaaaaaaaaaaaaaaaaa");
+            console.log(this.allConcert);
+          })
+          .catch(error => {
+            console.log('获取演唱会数据失败：', error);
+          });
+    },
+
     addInteraction(type) {
       // this.clearMap();
 
@@ -930,14 +733,6 @@ export default {
         this.allCommunityCount = cityData.data.communityCount
         this.cityInfoList = []
         this.cityInfoList.push(
-            //     {
-            //   id: 'u-iotdoor',
-            //   name: '全国社区设备总量',
-            //   value: this.formatter(cityData.data.iotdoorControlCount),
-            //   valueArr: this.formatter(cityData.data.iotdoorControlCount).split(''),
-            //   type: cityData.data.iotdoorControlCountUpType,
-            //   percentage: `${(cityData.data.iotdoorControlCountPercentage * 100).toFixed(1)} %`
-            // },
             {
               id: 'u-community',
               name: '全国演唱会总量',
@@ -947,14 +742,6 @@ export default {
               type: cityData.data.cityCountUpType,
               percentage: `${(cityData.data.cityCountPercentage * 100).toFixed(1)}%`
             }
-            // , {
-            //   id: 'u-city',
-            //   name: '全国住宅社区',
-            //   value: this.formatter(cityData.data.communityCount),
-            //   valueArr: this.formatter(cityData.data.communityCount).split(''),
-            //   type: cityData.data.communityCountUpType,
-            //   percentage: `${(cityData.data.communityCountPercentage * 100).toFixed(1)}%`
-            // }
         )
         this.timedRefresh(this.cityInfoList, 'city')
         cityData.data.cityList.sort((a, b) => {
@@ -1211,6 +998,7 @@ export default {
 }
 
 .ol-popup {
+  height:300px;
   position: absolute;
   -webkit-filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.2));
   filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.2));
@@ -1230,12 +1018,14 @@ export default {
   pointer-events: none;
 }
 .ol-popup:after {
+  height:300px;
   border-top-color: rgba(10, 28, 53, 0.86);
   border-width: 10px;
   left: 48px;
   margin-left: -10px;
 }
 .ol-popup:before {
+  height:300px;
   border-top-color: rgba(10, 28, 53, 0.86);
   border-width: 11px;
   left: 48px;

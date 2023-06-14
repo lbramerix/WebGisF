@@ -110,114 +110,53 @@ export const mapjs = {
 			var content = document.getElementById("popup-content");
 			content.innerHTML = "";
 
-			if (featureInfo.type == "hycl") {
-				let popup = document.getElementById("popup-content");
-				popup.setAttribute("style", "width:530px");
-				content.innerHTML =
-					'<div class="hy-cl tfText ">' +
-					'<div class="header">' +
-					featureInfo.name +
-					"</div>" +
-					'<div class="hy-body">' +
-					'<div style="padding-top:2rem" class="body-foot">' +
-					"<p>车辆轴数: " +
-					"<p class='p-left'>" +
-					featureInfo.a1 +
-					"</p > " +
-					"</p>" +
-					"<p>运输证有效期止: " +
-					"<p class='p-left'>" +
-					featureInfo.b1 +
-					"</p > " +
-					"</p>" +
-					"<p>联系电话: " +
-					"<p class='p-left'>" +
-					featureInfo.c1 +
-					"</p > " +
-					"</p>" +
-					"<p>定位地址: " +
-					"<p class='p-left'>" +
-					featureInfo.d1 +
-					"</p > " +
-					"</div>" +
-					'<div style="padding-top:2rem" class="body-foot">' +
-					"<p>道路运输证: " +
-					"</p>" +
-					"<p class='p-left'>" +
-					featureInfo.a2 +
-					"</p > " +
-					"<p>定位时间: " +
-					"</p>" +
-					"<p class='p-left'>" +
-					featureInfo.b2 +
-					"</p > " +
-					"<p>车辆所有人: " +
-					"</p>" +
-					"<p class='p-left'>" +
-					featureInfo.c2 +
-					"</p > " +
-					"</div>" +
-					"<div class='body-img'>" +
-					'<img src="' +
-					featureInfo.img +
-					'" />' +
-					"</div" +
-					"</div > " +
-					'<span class="span-left-top"></span>' +
-					'<span class="span-left-bottom"></span>' +
-					'<span class="span-right-bottom"></span>' +
-					'<span class="span-right-top"></span>' +
-					"</div>";
-			}
 			if (featureInfo.type == "hyytdw") {
 				let popup = document.getElementById("popup-content");
 				popup.setAttribute("style", "width:530px");
 				content.innerHTML =
 					'<div class="hy-dw tfText ">' +
 					'<div class="header">' +
-					featureInfo.name +
+					"演唱会信息" +
 					"</div>" +
 					'<div class="hy-body">' +
 					'<div style="padding-top:2rem" class="body-foot">' +
-					"<p>所属街道: " +
+					"<p>演唱会名称: " +
 					"<p class='p-left'>" +
-					featureInfo.a1 +
+					featureInfo.name +
 					"</p > " +
 					"</p>" +
-					"<p>今日过车数: " +
+					"<p>演出时间: " +
 					"<p class='p-left'>" +
-					featureInfo.b1 +
+					featureInfo.showtime +
 					"</p > " +
 					"</p>" +
-					"<p>联系人: " +
+					"<p>艺人: " +
 					"<p class='p-left'>" +
-					featureInfo.c1 +
+					(featureInfo.actors ? featureInfo.actors.replace("艺人：", "") : "暂无信息") +
 					"</p > " +
 					"</p>" +
 					"</div>" +
 					'<div style="padding-top:2rem" class="body-foot">' +
-					"<p>监管单位: " +
+					"<p>票价区间: " +
 					"</p>" +
 					"<p class='p-left'>" +
-					featureInfo.a2 +
+					featureInfo.pricestr +
 					"</p > " +
-					"<p>自查自纠数: " +
+					"<p>演出城市: " +
 					"</p>" +
 					"<p class='p-left'>" +
-					featureInfo.b2 +
+					featureInfo.cityname +
 					"</p > " +
-					"<p>联系电话: " +
+					"<p>演出具体地点: " +
 					"</p>" +
 					"<p class='p-left'>" +
-					featureInfo.c2 +
+					featureInfo.venue +
 					"</p > " +
 					"</div>" +
 					"<div class='body-img'>" +
 					'<img src="' +
-					featureInfo.img +
+					featureInfo.verticalpic +
 					'" />' +
-					"<p class='address'>" + '单位地址：' +
-					featureInfo.d1 + "</p>" +
 					"</div>" +
 					"</div > " +
 					'<span class="span-left-top"></span>' +
@@ -227,32 +166,34 @@ export const mapjs = {
 					"</div>";
 			}
 
-			that.overlay.setPosition([featureInfo.lon, featureInfo.lat]);
+			that.overlay.setPosition([ parseFloat(featureInfo.longutide),  parseFloat(featureInfo.lat)]);
 			that.selectedFeature = feature;
 		},
 		/* 拿到数据往地图上渲染 */
 		setMap(data, type) {
+			console.log("cccccccccccccccccc");
+			console.log(data);
 			const markData = data;
 			const features = new Array(markData.length);
 			markData.forEach(function(item, index) {
 				let attr = {};
 				attr = {
-					lon: item.lon,
-					lat: item.lat,
+					longutide:  parseFloat(item.longutide),
+					lat:  parseFloat(item.lat),
 					name: item.name,
 					type: type,
-					a1: item.a1,
-					b1: item.b1,
-					c1: item.c1,
-					d1: item.d1,
-					a2: item.a2,
+					showtime: item.showtime,
+					pricestr: item.pricestr,
+					cityname: item.cityname,
+					venue: item.venue,
+					actors: item.actors,
 					b2: item.b2,
 					c2: item.c2,
 					d2: item.d2,
-					img: item.img,
+					verticalpic: item.verticalpic,
 				};
 				features[index] = new Feature({
-					geometry: new Point([item.lon, item.lat]),
+					geometry: new Point([ parseFloat(item.longutide),  parseFloat(item.lat)]),
 					attribute: attr,
 				});
 			});

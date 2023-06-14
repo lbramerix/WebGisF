@@ -106,7 +106,7 @@ html, body, #app
   background: rgb(10, 28, 53, 0.86);
   z-index: 101;
   width: 530px;
-  height: 220px;
+  height: 300px;
   border: 1px solid #253960;
   .header {
     background: url('~@/assets/images/title_head.png');

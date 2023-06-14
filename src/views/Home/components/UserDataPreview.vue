@@ -3,29 +3,8 @@
   <div class="user-data-preview">
     <!-- 左侧数据预览 -->
     <div class="data-overview left-layout">
-<!--      <div class="user-details">-->
-<!--        <p class="content-title">累计数据概览</p>-->
-<!--        <ul>-->
-<!--          <li v-for="(item, index) in userData" :key="index" :class="[{'allUser': item.id === 'allUser'}, {'allUserOpen': item.id === 'allUserOpen'},-->
-<!--              {'allOpen': item.id === 'allOpen'}, {'allUserFace': item.id === 'allUserFace'}]">-->
-<!--            <div class="user-flop-box">-->
-<!--              <div>-->
-<!--                <span :class="[{'flop-figure': !isNaN(ls)}, {'flop-comma': isNaN(ls)}]"  v-for="(ls, index) in item.valueArr" :key="item.id + index">-->
-<!--                  <i v-if="!isNaN(ls)">0123456789</i>-->
-<!--                  <span v-else>{{ls}}</span>-->
-<!--                </span>-->
-<!--              </div>-->
-<!--              <div>-->
-<!--                <img :src="item.type === 0 ? riseImage : declineImage" alt="">-->
-<!--                <span :class="{'decline': item.type === 1}">{{item.typeValue}}</span>-->
-<!--              </div>-->
-<!--            </div>-->
-<!--            <div>{{item.name}}</div>-->
-<!--          </li>-->
-<!--        </ul>-->
-<!--      </div>-->
       <dv-border-box-8 class="channel-proportion" :style="{'height': height}">
-        <p class="content-title">演唱会数量排名前十城市占比</p>
+        <p class="content-title" style="padding-top: 10px">演唱会数量排名前十城市占比</p>
         <div class="content">
           <div id="channelCanvas" style="width: 100%; height: 225px"></div>
         </div>
@@ -37,6 +16,72 @@
     </div>
     <!-- 右侧状态 -->
     <div class="live-status right-layout">
+      <dv-border-box-10 style="height: 350px;position: relative">
+        <p class="content-title">菜单栏</p>
+        <div style="position: absolute; top: 30px; left: 20px;display: flex; flex-direction: column;">
+          <p class="content-title">绘制工具选择</p>
+          <div style="padding-left: 20px;padding-top: 10px;">
+<!--            <el-button type="primary" @click="addInteractionPoint">绘制点</el-button>-->
+            <el-select v-model="value" clearable placeholder="绘制选择" @change="handleSelectAddInteraction">
+              <el-option
+                  v-for="item in options"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value">
+              </el-option>
+            </el-select>
+          </div>
+        </div>
+
+        <div style="position: absolute; top: 120px; left: 20px;display: flex; flex-direction: column;">
+          <p class="content-title">测量工具选择</p>
+          <div style="padding-left: 20px;padding-top: 10px;">
+            <el-select v-model="value2" clearable placeholder="测量选择" @change="handleSelectMeasureInteraction">
+              <el-option
+                  v-for="item in options2"
+                  :key="item.value2"
+                  :label="item.label2"
+                  :value="item.value2">
+              </el-option>
+            </el-select>
+          </div>
+        </div>
+
+        <div style="position: absolute; top: 210px; left: 20px;display: flex; flex-direction: column;">
+          <p class="content-title">地图导出工具</p>
+          <div style="padding-left: 20px;padding-top: 10px;">
+            <el-select v-model="value3" clearable placeholder="格式选择" @change="exportMap">
+              <el-option
+                  v-for="item in options3"
+                  :key="item.value3"
+                  :label="item.label3"
+                  :value="item.value3">
+              </el-option>
+            </el-select>
+          </div>
+        </div>
+
+      </dv-border-box-10>
+
+      <dv-border-box-10 style="height: 350px;position: relative;margin-top: 20px">
+        <p class="content-title">搜索演唱会</p>
+
+        <div style="position: absolute; top: 30px; left: 20px;display: flex; flex-direction: column;">
+          <p class="content-title">按日期搜索</p>
+          <div style="padding-left: 20px;padding-top: 10px;">
+            <el-date-picker
+                v-model="date"
+                type="date"
+                placeholder="选择日期">
+            </el-date-picker>
+            <el-button type="primary" style="margin-left: 15px" @click="dateSearch">查询</el-button>
+
+          </div>
+        </div>
+
+
+      </dv-border-box-10>
+
 <!--      <dv-border-box-8 class="status-details" :style="{'height': height}">-->
 <!--        <p class="content-title">实时状态</p>-->
 <!--        <div class="content">-->
@@ -105,6 +150,7 @@ export default {
   },
   data () {
     return {
+      searchText: "", // 定义搜索框的数据模型
       timer: null,
       numTimer: null,
       pointTimer: null,
@@ -129,7 +175,48 @@ export default {
       rankingConfig: {
         data: [],
         formatter: true
-      }
+      },
+      options: [{
+        value: 'point',
+        label: '绘制点'
+      }, {
+        value: 'line',
+        label: '绘制线'
+      }, {
+        value: 'polygon',
+        label: '绘制多边形'
+      }, {
+        value: 'clear',
+        label: '清除'
+      }],
+      value: '',
+      options2: [ {
+        value2: 'line',
+        label2: '测量距离'
+      }, {
+        value2: 'polygon',
+        label2: '测量面积'
+      }, {
+        value2: 'clear',
+        label2: '清除'
+      }],
+      value2: '',
+      options3: [ {
+        value3: 'png',
+        label3: 'PNG格式'
+      }, {
+        value3: 'jpg',
+        label3: 'JPG格式'
+      }, {
+        value3: 'pdf',
+        label3: 'PDF格式'
+      },
+        {
+          value3: 'json',
+          label3: 'JSON格式'
+        }],
+      value3: '',
+      date:'',
     }
   },
   mounted () {
@@ -145,6 +232,48 @@ export default {
     }, 1000)
   },
   methods: {
+    search() {
+      // 触发自定义事件，将搜索关键词传递给父级组件
+      this.$emit('search', this.searchText);
+    },
+    addInteractionPoint(){
+      this.$emit('addInteractionPoint');
+    },
+    handleSelectAddInteraction(value) {
+      console.log('选中的值为：', value);
+      if(value=="point"){
+        this.$emit('addInteractionPoint');
+      }else if(value=="line"){
+        this.$emit('addInteractionLine');
+      }else if(value=="polygon"){
+        this.$emit('addInteractionPolygon');
+      }else{
+        this.$emit('clear');
+      }
+    },
+    handleSelectMeasureInteraction(value){
+      if(value=="line"){
+        this.$emit('measureInteractionLine');
+      }else if(value=="polygon"){
+        this.$emit('measureInteractionPolygon');
+      }else{
+        this.$emit('clear');
+      }
+    },
+    exportMap(value){
+      if(value=="png"){
+        this.$emit('exportMapPNG');
+      }else if(value=="jpg"){
+        this.$emit('exportMapJPG');
+      }else if(value=="pdf"){
+        this.$emit('exportMapPDF');
+      }else{
+        this.$emit('exportMapJSON');
+      }
+    },
+    dateSearch(){
+      this.$emit('dateSearch',this.date);
+    },
     getTopTen(){
       let myChart = echarts.init(document.getElementById('channelCanvas'))
       getRequest("/citycount/getConcertNumByCity").then(resp => {
@@ -228,6 +357,9 @@ export default {
         }
       })
     },
+    handleAddInteraction() {
+      this.$emit('add-interaction', 'Point');
+    },
     // 用户数据概览
     initUserDataPreview () {
       if (previewData.code !== 0) return
@@ -266,7 +398,7 @@ export default {
         this.$parent.timedRefresh(this.userData, 'user')
       }, 1000)
     },
-    // 用户开门用户城市排行
+    // 演唱会数量
     initUserRanking () {
       if (userRankingData.code !== 0) return
       let list = []
@@ -288,6 +420,16 @@ export default {
         }
       })
 
+    },
+    // 处理输入事件
+    handleInput() {
+      // 可以加上一些自定义逻辑，例如输入实时搜索等
+    },
+
+    // 处理搜索事件
+    handleSearch() {
+      // 触发 search 事件，并将搜索关键词作为参数传递给父组件
+      this.$emit("search", this.keyword);
     },
     // 用户实时状态
     initUserStates () {
@@ -496,4 +638,19 @@ export default {
   }
 }
 </script>
+<style>
 
+.centered-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.transparent-button {
+  opacity: 1;
+  background-color: transparent;
+  color: white;
+}
+
+</style>

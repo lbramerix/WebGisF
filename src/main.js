@@ -11,6 +11,8 @@ import store from './store'
 
 
 import ElementUI from 'element-ui'
+import 'element-ui/lib/theme-chalk/index.css'
+
 
 // 加载 element 组件库的样式
 import 'element-ui/lib/theme-chalk/index.css'
@@ -19,20 +21,29 @@ import 'element-ui/lib/theme-chalk/index.css'
 import {
   loading,
   borderBox8,
+  borderBox9,
+  borderBox10,
+  borderBox12,
   decoration3,
   decoration5,
   decoration10,
+  decoration11,
   activeRingChart,
 } from '@jiaminghi/data-view'
 Vue.use(ElementUI)
 Vue.use(echarts)
 Vue.use(loading)
 Vue.use(borderBox8)
+Vue.use(borderBox9)
+Vue.use(borderBox10)
+Vue.use(borderBox12)
 Vue.use(decoration3)
 Vue.use(decoration5)
 Vue.use(decoration10)
+Vue.use(decoration11)
 Vue.use(activeRingChart)
 //Vue.use(iView)
+
 
 //
 // const app = createApp(App)
