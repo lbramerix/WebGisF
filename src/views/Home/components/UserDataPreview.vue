@@ -63,62 +63,76 @@
 
       </dv-border-box-10>
 
-      <dv-border-box-10 style="height: 350px;position: relative;margin-top: 20px">
+      <dv-border-box-10 style="height: 400px;position: relative;margin-top: 20px">
         <p class="content-title">搜索演唱会</p>
 
         <div style="position: absolute; top: 30px; left: 20px;display: flex; flex-direction: column;">
           <p class="content-title">按日期搜索</p>
-          <div style="padding-left: 20px;padding-top: 10px;">
+          <div style="padding-left: 20px;padding-top: 10px;display: flex;">
             <el-date-picker
+                style="flex-grow: 1;"
                 v-model="date"
                 type="date"
-                placeholder="选择日期">
+                placeholder="选择日期"
+                ref="picker"
+                @change="calculateWidths">
             </el-date-picker>
             <el-button type="primary" style="margin-left: 15px" @click="dateSearch">查询</el-button>
 
           </div>
         </div>
 
+        <div style="position: absolute; top: 120px; left: 20px;display: flex; flex-direction: column;">
+          <p class="content-title">按艺人搜索</p>
+          <div style="padding-left: 20px;padding-top: 10px;display: flex;">
+            <el-input style="flex-grow: 1;"
+                      placeholder="请输入内容"
+                      v-model="actorName"
+                      clearable>
+            </el-input>
+            <el-button type="primary" style="margin-left: 15px" @click="actorSearch">查询</el-button>
 
+          </div>
+        </div>
+
+        <div style="position: absolute; top: 200px; left: 20px;display: flex; flex-direction: column;">
+          <p class="content-title">按城市名搜索</p>
+          <div style="padding-left: 20px;padding-top: 10px;display: flex;">
+            <el-select v-model="selectedCity" filterable placeholder="请选择城市" style="flex-grow: 1;">
+              <el-option
+                  v-for="(city, index) in cities"
+                  :key="index"
+                  :label="city"
+                  :value="index"
+              />
+            </el-select>
+            <el-button type="primary" style="margin-left: 15px" @click="citynameSearch">查询</el-button>
+          </div>
+        </div>
+
+        <div style="position: absolute; top: 280px; left: 20px;display: flex; flex-direction: column;">
+          <p class="content-title">按价格范围搜索</p>
+          <div style="padding-left: 20px; padding-top: 10px; display: flex; flex-direction: row;">
+            <el-input
+                placeholder="最低价"
+                v-model.number="inputNumber1"
+                type="number"
+                clearable
+                :style="{ width: inputWidth1 + 'px', marginRight: '10px' }">
+            </el-input>
+
+            <el-input
+                placeholder="最高价"
+                v-model.number="inputNumber2"
+                type="number"
+                clearable
+                :style="{ width: inputWidth2 + 'px' }">
+            </el-input>
+            <el-button type="primary" style="margin-left: 15px" @click="priceSearch">查询</el-button>
+
+          </div>
+        </div>
       </dv-border-box-10>
-
-<!--      <dv-border-box-8 class="status-details" :style="{'height': height}">-->
-<!--        <p class="content-title">实时状态</p>-->
-<!--        <div class="content">-->
-<!--          <ul>-->
-<!--            <li>-->
-<!--              <div id="passRate" style="width: 120px;height: 120px"></div>-->
-<!--              <p>审核通过率 {{applyRate}}</p>-->
-<!--              <p>{{applyTotal}}</p>-->
-<!--              <p>累计注册用户</p>-->
-<!--            </li>-->
-<!--            <li>-->
-<!--              <div id="faceRate" style="width: 120px;height: 120px"></div>-->
-<!--              <p>人脸开通率 {{faceRate}}</p>-->
-<!--              <p>{{faceTotal}}</p>-->
-<!--              <p>录入人脸图像(张)</p>-->
-<!--            </li>-->
-<!--          </ul>-->
-<!--        </div>-->
-<!--      </dv-border-box-8>-->
-<!--      <dv-border-box-8 class="portrait-crowd" :style="{'height': height}">-->
-<!--        <p class="content-title">用户人群画像</p>-->
-<!--        <div class="content">-->
-<!--          <div class="portrait">-->
-<!--            <div>-->
-<!--              <img src="@/assets/boy.png" alt="">-->
-<!--              <p>男</p>-->
-<!--              <p>{{manRate}}</p>-->
-<!--            </div>-->
-<!--            <div>-->
-<!--              <img src="@/assets/girl.png" alt="">-->
-<!--              <p>女</p>-->
-<!--              <p>{{womanRate}}</p>-->
-<!--            </div>-->
-<!--          </div>-->
-<!--          <div id="crowdCanvas"></div>-->
-<!--        </div>-->
-<!--      </dv-border-box-8>-->
     </div>
   </div>
 </template>
@@ -129,6 +143,10 @@ import { previewData, userRankingData, userStates, userPortraitData, userChannel
 // 自定义排名轮播
 import ScrollRankingBoard from '@/components/ScrollRankingBoard/src/index'
 import {getRequest} from "@/utils/api";
+import { ElInput } from "element-ui"; // 引入 el-input 组件
+const axios = require("axios");
+
+
 export default {
   name: 'UserDataPreview',
   components: { ScrollRankingBoard },
@@ -217,6 +235,13 @@ export default {
         }],
       value3: '',
       date:'',
+      actorName:"",
+      selectedCity: "",
+      cities: [],
+      inputNumber1: "",
+      inputNumber2: "",
+      inputWidth1: null,
+      inputWidth2: null,
     }
   },
   mounted () {
@@ -230,8 +255,30 @@ export default {
       // this.initUserChannelCanvas()
       this.getTopTen()
     }, 1000)
+    axios.get('/citycount/getConcertCity')
+        .then(response => {
+          this.cities = response.data;
+        })
+        .catch(error => {
+          console.log('获取城市名数据失败：', error);
+        });
+    // 初始时计算 input 的宽度
+    this.calculateWidths();
+
   },
   methods: {
+    calculateWidths() {
+      // 获取 date-picker 的宽度
+      const pickerWidth = this.$refs.picker.$el.clientWidth;
+
+      // 计算两个 input 需要的宽度
+      const inputsWidth = pickerWidth - 10; // 减去容器 padding 和两个 input 的 margin-right
+      const inputWidth = inputsWidth / 2;
+
+      // 更新 input 的宽度
+      this.inputWidth1 = inputWidth;
+      this.inputWidth2 = inputWidth;
+    },
     search() {
       // 触发自定义事件，将搜索关键词传递给父级组件
       this.$emit('search', this.searchText);
@@ -273,6 +320,15 @@ export default {
     },
     dateSearch(){
       this.$emit('dateSearch',this.date);
+    },
+    actorSearch(){
+      this.$emit('actorSearch',this.actorName);
+    },
+    citynameSearch(){
+      this.$emit('citynameSearch',this.cities[this.selectedCity]);
+    },
+    priceSearch(){
+      this.$emit('priceSearch',this.inputNumber1,this.inputNumber2);
     },
     getTopTen(){
       let myChart = echarts.init(document.getElementById('channelCanvas'))
@@ -359,44 +415,6 @@ export default {
     },
     handleAddInteraction() {
       this.$emit('add-interaction', 'Point');
-    },
-    // 用户数据概览
-    initUserDataPreview () {
-      if (previewData.code !== 0) return
-      this.allUserNumCount = previewData.data.allUserNumCount
-      this.userData = []
-      this.userData.push({
-        id: 'allUser',
-        name: '累计注册用户',
-        value: this.$parent.formatter(previewData.data.allUserNumCount),
-        valueArr: this.$parent.formatter(previewData.data.allUserNumCount).split(''),
-        type: previewData.data.allUserNumUpType,
-        typeValue: `${(+previewData.data.allUserNumPercentage * 100).toFixed(1)}%`
-      }, {
-        id: 'allUserOpen',
-        name: '累计开门人数',
-        value: this.$parent.formatter(previewData.data.allUserOpenNumCount),
-        valueArr: this.$parent.formatter(previewData.data.allUserOpenNumCount).split(''),
-        type: previewData.data.allUserOpenNumUpType,
-        typeValue: `${(+previewData.data.allUserOpenNumPercentage * 100).toFixed(1)}%`
-      }, {
-        id: 'allOpen',
-        name: '累计开门次数',
-        value: this.$parent.formatter(previewData.data.allOpenNumCount),
-        valueArr: this.$parent.formatter(previewData.data.allOpenNumCount).split(''),
-        type: previewData.data.allOpenNumUpType,
-        typeValue: `${(+previewData.data.allOpenNumCountPercentage * 100).toFixed(1)}%`
-      }, {
-        id: 'allUserFace',
-        name: '累计人脸开门次数',
-        value: this.$parent.formatter(previewData.data.allUserFaceOpenNumCount),
-        valueArr: this.$parent.formatter(previewData.data.allUserFaceOpenNumCount).split(''),
-        type: previewData.data.allUserFaceOpenNumCountUpType,
-        typeValue: `${(+previewData.data.allUserFaceOpenNumCountPercentage * 100).toFixed(1)}%`
-      })
-      setTimeout(() => {
-        this.$parent.timedRefresh(this.userData, 'user')
-      }, 1000)
     },
     // 演唱会数量
     initUserRanking () {

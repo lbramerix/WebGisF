@@ -4,13 +4,17 @@ import hyJson from "@/assets/area/中华人民共和国.json";
 import VectorSource from "ol/source/Vector";
 import GeoJSON from "ol/format/GeoJSON";
 import VectorLayer from "ol/layer/Vector";
-import { LinearRing, Point } from "ol/geom";
+import {LinearRing, LineString, Point} from "ol/geom";
 import Feature from "ol/Feature";
-import { Style, Icon, Fill, Stroke, Text } from "ol/style";
+import {Style, Icon, Fill, Stroke, Text, RegularShape} from "ol/style";
 import { fromExtent } from "ol/geom/Polygon";
 import Cluster from "ol/source/Cluster";
 import VectorImageLayer from "ol/layer/VectorImage";
 import Vector from "ol/source/Vector";
+import Overlay from "ol/Overlay";
+import Circle from "ant-design-vue/lib/progress/circle";
+import FeatureAnimation from 'ol-ext/featureanimation/FeatureAnimation.js';
+
 export const mapjs = {
 	data() {
 		return {
@@ -325,5 +329,95 @@ export const mapjs = {
 			this.layers.push(vectorLayer);
 			this.map.addLayer(vectorLayer);
 		},
+
+		// drawRoute(data) {
+		// 	// 从数据中提取经纬度信息，创建一个包含所有点坐标的数组
+		// 	const coordinates = data.map(item => [parseFloat(item.longutide), parseFloat(item.lat)]);
+		// 	// 创建线几何对象
+		// 	const lineGeometry = new LineString(coordinates);
+		// 	//创建线特征对象
+		// 	const lineFeature = new Feature({
+		// 		geometry: lineGeometry,
+		// 	});
+		// 	// 创建线样式
+		// 	const lineStyle = new Style({
+		// 		stroke: new Stroke({
+		// 			color: 'red',
+		// 			width: 2,
+		// 		}),
+		// 	});
+		// 	// 创建路线图层并添加到地图中
+		// 	const lineLayer = new VectorLayer({
+		// 		source: new VectorSource({
+		// 			features: [lineFeature],
+		// 		}),
+		// 		style: lineStyle,
+		// 		name:"lineLayer",
+		// 	});
+		// 	this.map.addLayer(lineLayer);
+		// }
+		drawRoute(data) {
+			const lineSource = new VectorSource();
+			for (let i = 0; i < data.length - 1; i++) {
+				const startCoord = [parseFloat(data[i].longutide), parseFloat(data[i].lat)];
+				const endCoord = [parseFloat(data[i + 1].longutide), parseFloat(data[i + 1].lat)];
+				const lineGeometry = new LineString([startCoord, endCoord]);
+				const lineFeature = new Feature({
+					geometry: lineGeometry,
+				});
+
+				// 计算箭头位置
+				const dx = endCoord[0] - startCoord[0];
+				const dy = endCoord[1] - startCoord[1];
+				const rotation = Math.atan2(dy, dx);
+				const arrowPosition = lineGeometry.getCoordinateAt(0.5); // 将箭头放置在线段中间
+
+				const lineStyle = new Style({
+					stroke: new Stroke({
+						color: 'rgba(0, 255, 0, 1)',
+						width: 4,
+						lineCap: 'round',
+						lineJoin: 'round',
+					}),
+				});
+				const arrowStyle = new Style({
+					stroke: new Stroke({
+						color: 'rgba(0, 255, 0, 1)',
+						width: 2,
+					}),
+					fill: new Fill({
+						color: 'rgba(0, 255, 0, 1)',
+					}),
+					geometry: new Point(arrowPosition),
+					image: new RegularShape({
+						fill: new Fill({
+							color: 'rgba(0, 255, 0, 1)',
+						}),
+						stroke: new Stroke({
+							color: 'rgba(0, 255, 0, 1)',
+							width: 2,
+						}),
+						points: 3,
+						radius: 10,
+						rotation: -rotation,
+						angle: Math.PI / 2,
+					}),
+				});
+				lineFeature.setStyle([lineStyle, arrowStyle]);
+				lineSource.addFeature(lineFeature);
+			}
+			const lineLayer = new VectorLayer({
+				source: lineSource,
+				name: 'lineLayer',
+			});
+			this.map.addLayer(lineLayer);
+		}
+
+
+
+
+
+
+
 	},
 };

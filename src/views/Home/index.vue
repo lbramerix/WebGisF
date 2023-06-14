@@ -104,6 +104,9 @@
               @exportMapPDF="exportMapPDF"
               @exportMapJSON="downloadGeoJSON"
               @dateSearch="dateSearch"
+              @actorSearch="actorSearch"
+              @citynameSearch="citynameSearch"
+              @priceSearch="priceSearch"
           ></UserDataPreview>
           <DeviceDataPreview
               v-if="active === 1"
@@ -243,30 +246,132 @@ export default {
       console.log("搜索关键词为:", keyword);
     },
     dateSearch(date){
-      // console.log('/concert/getConcertByTime?time='+moment(date).format('YYYY-MM-DD'));
-      /* 若有弹窗关闭掉 */
-      this.unSelect();
-      this.checkedListArr = this.allConcert; //把获取到的数据缓存起来
-      const layerNames = [];
-      //不能让默认的图层被隐藏
-      let allList = this.allConcert.concat(this.defaultList);
-      this.checkedList = allList;
-      this.layers.map((item) => {
-        if (allList.indexOf(item.getProperties().name) === -1) {
-          item.setVisible(false);
-        } else {
-          item.setVisible(true);
-        }
-        layerNames.push(item.getProperties().name);
-      });
-      axios.get('/concert/getConcertByTime?time='+moment(date).format('YYYY-MM-DD'))
-          .then(response => {
-            this.searchConcert = response.data;
-            this.setMap(this.searchConcert, "hyytdw");
-          })
-          .catch(error => {
-            console.log('获取演唱会数据失败：', error);
-          });
+      if(date==""){
+        this.$alert('请选择日期后再查询！', '提示', {
+          confirmButtonText: '确定',
+        });
+      }else{
+        /* 若有弹窗关闭掉 */
+        this.unSelect();
+        this.checkedListArr = this.allConcert; //把获取到的数据缓存起来
+        const layerNames = [];
+        //不能让默认的图层被隐藏
+        let allList = this.allConcert.concat(this.defaultList);
+        this.checkedList = allList;
+        this.layers.map((item) => {
+          if (allList.indexOf(item.getProperties().name) === -1) {
+            item.setVisible(false);
+          } else {
+            item.setVisible(true);
+          }
+          layerNames.push(item.getProperties().name);
+        });
+        axios.get('/concert/getConcertByTime?time='+moment(date).format('YYYY-MM-DD'))
+            .then(response => {
+              this.searchConcert = response.data;
+              this.setMap(this.searchConcert, "hyytdw");
+            })
+            .catch(error => {
+              console.log('获取演唱会数据失败：', error);
+            });
+      }
+    },
+    actorSearch(actor){
+      if(actor==""){
+        this.$alert('请输入艺人名字后再查询！', '提示', {
+          confirmButtonText: '确定',
+        });
+      }else{
+        /* 若有弹窗关闭掉 */
+        this.unSelect();
+        this.checkedListArr = this.allConcert; //把获取到的数据缓存起来
+        const layerNames = [];
+        //不能让默认的图层被隐藏
+        let allList = this.allConcert.concat(this.defaultList);
+        this.checkedList = allList;
+        this.layers.map((item) => {
+          if (allList.indexOf(item.getProperties().name) === -1) {
+            item.setVisible(false);
+          } else {
+            item.setVisible(true);
+          }
+          layerNames.push(item.getProperties().name);
+        });
+        axios.get('/concert/getConcernByActor?actors='+actor)
+            .then(response => {
+              this.searchConcert = response.data;
+              this.setMap(this.searchConcert, "hyytdw");
+              const lineLayer = this.map.getLayers().getArray().find(layer => layer.get('name') === 'lineLayer'); // 获取路线图层变量
+              this.map.removeLayer(lineLayer); // 删除路线图层
+              this.drawRoute(this.searchConcert);
+            })
+            .catch(error => {
+              console.log('获取演唱会数据失败：', error);
+            });
+      }
+    },
+    citynameSearch(cityname){
+      if(cityname==""){
+        this.$alert('请选择地点信息后再查询！', '提示', {
+          confirmButtonText: '确定',
+        });
+      }else{
+        console.log(cityname);
+        /* 若有弹窗关闭掉 */
+        this.unSelect();
+        this.checkedListArr = this.allConcert; //把获取到的数据缓存起来
+        const layerNames = [];
+        //不能让默认的图层被隐藏
+        let allList = this.allConcert.concat(this.defaultList);
+        this.checkedList = allList;
+        this.layers.map((item) => {
+          if (allList.indexOf(item.getProperties().name) === -1) {
+            item.setVisible(false);
+          } else {
+            item.setVisible(true);
+          }
+          layerNames.push(item.getProperties().name);
+        });
+        axios.get('/concert/getConcertByCity?cityname='+cityname)
+            .then(response => {
+              this.searchConcert = response.data;
+              this.setMap(this.searchConcert, "hyytdw");
+            })
+            .catch(error => {
+              console.log('获取演唱会数据失败：', error);
+            });
+      }
+    },
+    priceSearch(low,high){
+      if(low==""||high==""){
+        this.$alert('请输入价格后再查询！', '提示', {
+          confirmButtonText: '确定',
+        });
+      }else{
+        /* 若有弹窗关闭掉 */
+        this.unSelect();
+        this.checkedListArr = this.allConcert; //把获取到的数据缓存起来
+        const layerNames = [];
+        //不能让默认的图层被隐藏
+        let allList = this.allConcert.concat(this.defaultList);
+        this.checkedList = allList;
+        this.layers.map((item) => {
+          if (allList.indexOf(item.getProperties().name) === -1) {
+            item.setVisible(false);
+          } else {
+            item.setVisible(true);
+          }
+          layerNames.push(item.getProperties().name);
+        });
+        axios.get('/concert/getConcertByPrice?lowPrice='+low+"&topPrice="+high)
+            .then(response => {
+              this.searchConcert = response.data;
+              this.setMap(this.searchConcert, "hyytdw");
+            })
+            .catch(error => {
+              console.log('获取演唱会数据失败：', error);
+            });
+      }
     },
     test(){
       /* 若有弹窗关闭掉 */
@@ -424,8 +529,6 @@ export default {
       axios.get('/concert/getAllConcert')
           .then(response => {
             this.allConcert = response.data;
-            console.log("aaaaaaaaaaaaaaaaaaa");
-            console.log(this.allConcert);
             this.setMap(this.allConcert, "hyytdw");
           })
           .catch(error => {
