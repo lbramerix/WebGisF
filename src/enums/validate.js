@@ -22,19 +22,22 @@ export const SignInRules = {
 
 // 注册规则
 export const SignUpRules = {
-  username: [{ required: true, trigger: "blur", min: 3 }],
+  id: [{ required: true, trigger: "blur", min: 3 }],
   password: [{ required: true, trigger: "blur", min: 3 }],
-  sex: [{ required: true, message: "请选择性别", trigger: "change" }],
-  phoneNum: [{ essage: "请选择日期", trigger: "blur" }],
-  email: [
-    { message: "请输入邮箱地址", trigger: "blur" },
-    {
-      type: "email",
-      message: "请输入正确的邮箱地址",
-      trigger: ["blur", "change"],
-    },
+};
+
+// 修改信息规则
+export const ChangeInfoRules = {
+  username: [{ required: true, trigger: "blur", min: 3 }
   ],
-  birth: [{ required: true, type: "date", message: "请选择日期", trigger: "change" }],
-  introduction: [{ message: "请输入介绍", trigger: "blur" }],
-  location: [{ message: "请输入地区", trigger: "change" }],
+  id: [{ required: true, trigger: "blur", min: 3 }],
+  sex: [{ required: true, trigger: "blur", min: 3 }],
+  jianjie: [{ required: true, trigger: "blur", min: 3 }],
+};
+
+// 修改密码规则
+export const ChangePwdRules = {
+  oldPwd: [{ required: true, trigger: "blur", min: 3 }],
+  newPwd: [{ required: true, trigger: "blur", min: 3 }],
+  confirmPwd: [{ required: true, trigger: "blur", min: 3 }],
 };

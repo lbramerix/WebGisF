@@ -1,15 +1,15 @@
 <template>
   <div class="login-wrap">
-    <el-form class="login-container">
+    <el-form class="login-container" ref="form" :model="form" :rules="rules" >
       <h1 class="title">用户登录：</h1>
-      <el-form-item>
-        <el-input type="text" placeholder="用户账号" v-model="username" autocomplete="off"></el-input>
+      <el-form-item prop="id">
+        <el-input type="text" placeholder="用户账号" v-model="form.id" autocomplete="off"></el-input>
+      </el-form-item>
+      <el-form-item prop="password">
+        <el-input type="password" placeholder="用户密码" v-model="form.password" autocomplete="off"></el-input>
       </el-form-item>
       <el-form-item>
-        <el-input type="password" placeholder="用户密码" v-model="password" autocomplete="off"></el-input>
-      </el-form-item>
-      <el-form-item>
-        <el-button type="primary" @click="doLogin" style="width: 100%;">登录</el-button>
+        <el-button type="primary" @click="doLogin('form')" style="width: 100%;">登录</el-button>
       </el-form-item>
       <el-row style="text-align: center;margin-top: -10px;">
         <el-link type="primary" @click="toRegister">用户注册</el-link>
@@ -20,23 +20,73 @@
 </template>
 
 <script>
+import {getRequest} from "@/utils/api";
+import store from "@/store/index";
+
 export default {
   name: 'SignIn',
   data: function() {
     return {
-      username: '',
-      password: ''
+      form: {
+        id: '',
+        password: '',
+        username: ''
+      },
+      rules: {
+        password: [
+          { required: true, message: '请输入密码！', trigger: 'blur'}
+        ],
+        id: [
+          { required: true, message: '请输入ID！', trigger: 'blur' }
+        ]
+      }
     }
   },
   methods: {
-    doLogin:function(){
-      let username=this.username;
-      let password=this.password;
-      /* let params={
+    doLogin:function(formName){
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          const params = new URLSearchParams();
+          params.append("id", this.form.id);
+          params.append("password", this.form.password)
 
-      } */
-      console.log("username=%s,password=%s",username,password);
+          getRequest("/user/UserSignIn", params).then(resp =>{
+            if(resp){
+              console.log(resp);
+              //this.user=resp.data;
+              const id2 = resp.id;
+              this.form.username=resp.username;
+              console.log("用户名称："+this.form.username);
+              if(id2 === this.form.id){
+                // 将用户信息保存到状态管理器中
+                this.$store.commit('setId', this.form.id);
+                this.$store.commit('setUsername', this.form.username);
+
+                // 获取ID
+                const userId = this.$store.state.id;
+                console.log(this.$store.state);
+                console.log("取出来的id："+userId);
+
+                this.$message.success("登录成功！");
+                this.$router.push('/personal');
+              }
+            }else{
+              this.$message.error("登录失败！");
+            }
+
+          }).catch(err => {
+            console.log(err);
+          });
+
+          console.log("id=%s,password=%s",this.form.id,this.form.password);
+        } else {
+          this.$message.error("请输入格式正确的数据！");
+          console.log('error submit!!');
+        }
+      });
+
     },
+
     toRegister:function(){
       this.$router.push('/sign-up');
     }

@@ -1,4 +1,6 @@
 import Vue from 'vue'
+//import iView from 'iview'
+//import { Message } from 'iview'
 
 import App from './App.vue'
 import router from './router'
@@ -6,6 +8,7 @@ import * as echarts from 'echarts'
 import './utils/mixins'
 import axios from "axios";
 import store from './store'
+
 
 import ElementUI from 'element-ui'
 
@@ -29,6 +32,7 @@ Vue.use(decoration3)
 Vue.use(decoration5)
 Vue.use(decoration10)
 Vue.use(activeRingChart)
+//Vue.use(iView)
 
 //
 // const app = createApp(App)
@@ -42,6 +46,18 @@ Vue.use(activeRingChart)
 Vue.config.productionTip = false
 // Vue.prototype.$echarts = echarts
 Vue.prototype.axios=axios;
+
+router.beforeEach((to, from, next) => {
+  if (to.meta.requiresAuth && !store.getters.id) {
+    if (to.path !== '/sign-in') { // 避免重复重定向
+      next('/sign-in'); // 跳转到登录页
+    } else {
+      next(); // 继续路由跳转
+    }
+  } else {
+    next(); // 继续路由跳转
+  }
+});
 
 new Vue({
   router,

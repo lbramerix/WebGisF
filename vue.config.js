@@ -43,17 +43,3 @@ module.exports={
 
 
 const path = require('path');
-
-module.exports = {
-  chainWebpack: (config) => {
-    config.module
-        .rule('ts')
-        .test(/\.ts$/)
-        .use('ts-loader')
-        .loader('ts-loader')
-        .options({
-          appendTsSuffixTo: [/\.vue$/],
-          configFile: path.resolve(__dirname, 'tsconfig.json'), // 指定 tsconfig.json 路径
-        });
-  },
-};
