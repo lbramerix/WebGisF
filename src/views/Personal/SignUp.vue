@@ -31,8 +31,8 @@ export default {
       } else if( value.length>10 || value.length<6) {
         callback(new Error('密码长度应在6-10个字符之间！'));
       } else {
-        if (this.form.confirmPwd !== '') {
-          this.$refs.form.validateField('confirmPwd');
+        if (this.form.password1 !== '') {
+          this.$refs.form.validateField('password1');
         }
         callback();
       }
@@ -40,7 +40,7 @@ export default {
     const validatePass2 = (rule, value, callback) => {
       if (value === '') {
         callback(new Error('请再次输入新密码'));
-      } else if (value !== this.form.newPwd) {
+      } else if (value != this.form.password) {
         callback(new Error('两次输入密码不一致!'));
       } else {
         callback();
