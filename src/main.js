@@ -22,6 +22,7 @@ import 'element-ui/lib/theme-chalk/index.css'
 
 import {
   loading,
+  borderBox7,
   borderBox8,
   borderBox9,
   borderBox10,
@@ -35,6 +36,7 @@ import {
 Vue.use(ElementUI)
 Vue.use(echarts)
 Vue.use(loading)
+Vue.use(borderBox7)
 Vue.use(borderBox8)
 Vue.use(borderBox9)
 Vue.use(borderBox10)

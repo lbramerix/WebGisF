@@ -3,43 +3,43 @@
   <div class="dv-scroll-board" :ref="ref">
     <div class="header" v-if="header.length && mergedConfig" :style="`background-color: ${mergedConfig.headerBGC};`">
       <div
-        class="header-item"
-        v-for="(headerItem, i) in header"
-        :key="headerItem + i"
-        :style="`
+          class="header-item"
+          v-for="(headerItem, i) in header"
+          :key="headerItem + i"
+          :style="`
           height: ${mergedConfig.headerHeight}px;
           line-height: ${mergedConfig.headerHeight}px;
           width: ${widths[i]}px;
         `"
-        :align="aligns[i]"
-        v-html="headerItem"
+          :align="aligns[i]"
+          v-html="headerItem"
       />
     </div>
 
     <div
-      v-if="mergedConfig"
-      class="rows"
-      :style="`height: ${height - (header.length ? mergedConfig.headerHeight : 0)}px;`"
+        v-if="mergedConfig"
+        class="rows"
+        :style="`height: 200px;`"
     >
       <!-- background-color: ${mergedConfig[row.rowIndex % 2 === 0 ? 'evenRowBGC' : 'oddRowBGC']};-->
       <div
-        class="row-item"
-        v-for="(row, ri) in rows"
-        :key="row.toString() + row.scroll"
-        :style="`
-          height: ${heights[ri]}px;
+          class="row-item"
+          v-for="(row, ri) in rows"
+          :key="row.toString() + row.scroll"
+          :style="`
+          height: 50px;
           line-height: ${heights[ri]}px;
 
         `"
       >
         <div
-          class="ceil"
-          v-for="(ceil, ci) in row.ceils"
-          :key="ceil + ri + ci"
-          :style="`width: ${widths[ci]}px;`"
-          :align="aligns[ci]"
-          v-html="ceil"
-          @click="emitEvent(ri, ci, row, ceil)"
+            class="ceil"
+            v-for="(ceil, ci) in row.ceils"
+            :key="ceil + ri + ci"
+            :style="`width: ${widths[ci]}px;`"
+            :align="aligns[ci]"
+            v-html="ceil"
+            @click="emitEvent(ri, ci, row, ceil)"
         />
         <div class="line"> </div>
       </div>
@@ -300,49 +300,49 @@ export default {
 </script>
 
 <style lang="stylus">
-  .dv-scroll-board {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    color: #fff;
-    .text {
-      padding: 0 10px;
-      box-sizing: border-box;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .header {
-      display: flex;
-      flex-direction: row;
-      font-size: 15px;
-      .header-item .text{
-        transition: all 0.3s;
-      }
-    }
-    .rows {
-      overflow: hidden;
-      .row-item {
-        display: flex;
-        font-size: 14px;
-        transition: all 0.3s;
-        .ceil{
-          background: rgba(255, 255, 255, 0.05);
-          height calc(100% - 5px)
-          display flex
-          align-items center
-        }
-        .line{
-          position absolute
-          width: 100%;
-          height 5px
-          bottom 0
-        }
-      }
-      .index {
-        border-radius: 3px;
-        padding: 0px 3px;
-      }
+.dv-scroll-board {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  color: #fff;
+  .text {
+    padding: 0 10px;
+    box-sizing: border-box;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .header {
+    display: flex;
+    flex-direction: row;
+    font-size: 15px;
+    .header-item .text{
+      transition: all 0.3s;
     }
   }
+  .rows {
+    overflow: hidden;
+    .row-item {
+      display: flex;
+      font-size: 14px;
+      transition: all 0.3s;
+      .ceil{
+        background: rgba(255, 255, 255, 0.05);
+        height calc(100% - 5px)
+        display flex
+        align-items center
+      }
+      .line{
+        position absolute
+        width: 100%;
+        height 5px
+        bottom 0
+      }
+    }
+    .index {
+      border-radius: 3px;
+      padding: 0px 3px;
+    }
+  }
+}
 </style>

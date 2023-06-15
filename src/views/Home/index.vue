@@ -23,16 +23,6 @@
           <p :class="{'active': active === 1}" @click="handleChangeType(1)">艺人统计</p>
         </div>
 <!--        <dv-decoration-3 style="width:250px;height:30px;" />-->
-        <!-- 地图工具组件 -->
-<!--        <button @click="addInteraction('Point')">绘制点</button>-->
-<!--        <button @click="addInteraction('LineString')">绘制线</button>-->
-<!--        <button @click="addInteraction('Polygon')">绘制多边形</button>-->
-<!--        <button @click="measureInteraction('LineString')">测距</button>-->
-<!--        <button @click="measureInteraction('Polygon')">测面积</button>-->
-<!--        <button @click="clearMap()">清除</button>-->
-<!--        <button @click="exportMapPNG">导出</button>-->
-<!--        <button @click="downloadGeoJSON">导出json</button>-->
-        <button @click="test">导出json</button>
       </div>
     </header>
     <dv-decoration-10 style="width:100%;height:5px;" />
@@ -107,6 +97,8 @@
               @actorSearch="actorSearch"
               @citynameSearch="citynameSearch"
               @priceSearch="priceSearch"
+              @showAll="showAll"
+              @searchWeather="searchWeatherDo"
           ></UserDataPreview>
           <DeviceDataPreview
               v-if="active === 1"
@@ -114,6 +106,18 @@
               :fullscreen="fullscreen"
               :riseImage="riseImage"
               :declineImage="declineImage"
+              @addInteractionPoint="addInteraction('Point')"
+              @addInteractionLine="addInteraction('LineString')"
+              @addInteractionPolygon="addInteraction('Polygon')"
+              @measureInteractionLine="measureInteraction('LineString')"
+              @measureInteractionPolygon="measureInteraction('Polygon')"
+              @clear="clearMap()"
+              @exportMapPNG="exportMapPNG"
+              @exportMapJPG="exportMapJPG"
+              @exportMapPDF="exportMapPDF"
+              @exportMapJSON="downloadGeoJSON"
+              @actorSearchRoutine="actorSearchRoutine"
+              @searchWeather="searchWeatherDo"
           >
           </DeviceDataPreview>
         </div>
@@ -135,6 +139,24 @@
         </div>
       </div>
     </div>
+    <el-dialog title="null" :visible.sync="dialogVisible">
+      <template #title>
+        <el-input v-model="city" placeholder="请输入城市" clearable size="medium" :style="{ width: '300px' }">
+          <el-button slot="append" icon="el-icon-search" @click="searchWeather"></el-button>
+        </el-input>
+      </template>
+      <el-table :data="WeatherData" max-height="320px">
+        <el-table-column property="date" label="日期" width="150"></el-table-column>
+        <el-table-column property="celsiusHigh" label="最高温度" width="120"></el-table-column>
+        <el-table-column property="celsiusLow" label="最低温度" width="120"></el-table-column>
+        <el-table-column property="condition" label="天气情况" width="150">
+          <!--          <i id="my-icon" :class="WeatherData.condition"></i>-->
+          <template slot-scope="scope">
+            <i id="my-icon" :class="scope.row.condition"></i>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-dialog>
   </div>
 </template>
 
@@ -224,6 +246,9 @@ export default {
       /** 所有演唱会数据 */
       allConcert:[],
       searchConcert:[],
+      dialogVisible: false,
+      city: '',
+      WeatherData: [],
     }
   },
   mounted () {
@@ -244,6 +269,9 @@ export default {
     // 处理搜索事件
     handleSearch(keyword) {
       console.log("搜索关键词为:", keyword);
+    },
+    searchWeatherDo(){
+      this.dialogVisible = true;
     },
     dateSearch(date){
       if(date==""){
@@ -301,6 +329,40 @@ export default {
             .then(response => {
               this.searchConcert = response.data;
               this.setMap(this.searchConcert, "hyytdw");
+              // const lineLayer = this.map.getLayers().getArray().find(layer => layer.get('name') === 'lineLayer'); // 获取路线图层变量
+              // this.map.removeLayer(lineLayer); // 删除路线图层
+              // this.drawRoute(this.searchConcert);
+            })
+            .catch(error => {
+              console.log('获取演唱会数据失败：', error);
+            });
+      }
+    },
+    actorSearchRoutine(actor){
+      if(actor==""){
+        this.$alert('请输入艺人名字后再查询！', '提示', {
+          confirmButtonText: '确定',
+        });
+      }else{
+        /* 若有弹窗关闭掉 */
+        this.unSelect();
+        this.checkedListArr = this.allConcert; //把获取到的数据缓存起来
+        const layerNames = [];
+        //不能让默认的图层被隐藏
+        let allList = this.allConcert.concat(this.defaultList);
+        this.checkedList = allList;
+        this.layers.map((item) => {
+          if (allList.indexOf(item.getProperties().name) === -1) {
+            item.setVisible(false);
+          } else {
+            item.setVisible(true);
+          }
+          layerNames.push(item.getProperties().name);
+        });
+        axios.get('/concert/getActorRoutine?actor='+actor)
+            .then(response => {
+              this.searchConcert = response.data;
+              this.setMap(this.searchConcert, "hyytdw");
               const lineLayer = this.map.getLayers().getArray().find(layer => layer.get('name') === 'lineLayer'); // 获取路线图层变量
               this.map.removeLayer(lineLayer); // 删除路线图层
               this.drawRoute(this.searchConcert);
@@ -310,6 +372,7 @@ export default {
             });
       }
     },
+
     citynameSearch(cityname){
       if(cityname==""){
         this.$alert('请选择地点信息后再查询！', '提示', {
@@ -372,6 +435,11 @@ export default {
               console.log('获取演唱会数据失败：', error);
             });
       }
+    },
+    showAll(){
+      const lineLayer = this.map.getLayers().getArray().find(layer => layer.get('name') === 'lineLayer'); // 获取路线图层变量
+      this.map.removeLayer(lineLayer); // 删除路线图层
+      this.setMap(this.allConcert, "hyytdw");
     },
     test(){
       /* 若有弹窗关闭掉 */
@@ -569,8 +637,6 @@ export default {
       axios.get('/concert/getAllConcert')
           .then(response => {
             this.allConcert = response.data;
-            console.log("aaaaaaaaaaaaaaaaaaa");
-            console.log(this.allConcert);
           })
           .catch(error => {
             console.log('获取演唱会数据失败：', error);
@@ -954,6 +1020,7 @@ export default {
       if (this.active === val) return
       this.active = val
       this.showLoading()
+      this.clearMap()
     },
     // 关闭延时器
     showLoading () {
@@ -1051,6 +1118,24 @@ export default {
         cityTimer = null
         deviceTimer = null
       })
+    },
+    searchWeather(){
+      // 执行异步请求，获取数据
+      const params = new URLSearchParams();
+      params.append("CityName", this.city);
+
+      getRequest("/cityVisual/getWeather", params).then(resp => {
+        if(resp){
+          console.log(resp);
+          this.WeatherData=resp;
+
+        }else{
+          this.$message.error("天气查询失败！");
+        }
+
+      }).catch(err => {
+        console.log(err);
+      });
     },
   },
 };
@@ -1171,6 +1256,23 @@ export default {
    /*在地图容器中的层，要设置z-index的值让其显示在地图上层*/
    z-index: 2000;
  }
+
+.show{
+  margin: 100px auto;
+
+  width: 30%;
+  padding: 40px;
+  height: 140px;
+  border: 5px solid #47515d;
+  transition: all 0.9s;
+  border-radius: 10px;
+
+}
+
+.show:hover{
+  box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.4);
+  margin-top: 90px;
+}
 
 
 </style>

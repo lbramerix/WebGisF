@@ -413,11 +413,5 @@ export const mapjs = {
 			this.map.addLayer(lineLayer);
 		}
 
-
-
-
-
-
-
 	},
 };

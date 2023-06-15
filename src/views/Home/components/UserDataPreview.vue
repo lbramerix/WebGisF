@@ -16,12 +16,12 @@
     </div>
     <!-- 右侧状态 -->
     <div class="live-status right-layout">
-      <dv-border-box-10 style="height: 350px;position: relative">
+      <dv-border-box-10 style="height: 380px;position: relative;top: 10px">
         <p class="content-title">菜单栏</p>
         <div style="position: absolute; top: 30px; left: 20px;display: flex; flex-direction: column;">
           <p class="content-title">绘制工具选择</p>
           <div style="padding-left: 20px;padding-top: 10px;">
-<!--            <el-button type="primary" @click="addInteractionPoint">绘制点</el-button>-->
+            <!--            <el-button type="primary" @click="addInteractionPoint">绘制点</el-button>-->
             <el-select v-model="value" clearable placeholder="绘制选择" @change="handleSelectAddInteraction">
               <el-option
                   v-for="item in options"
@@ -33,7 +33,7 @@
           </div>
         </div>
 
-        <div style="position: absolute; top: 120px; left: 20px;display: flex; flex-direction: column;">
+        <div style="position: absolute; top: 110px; left: 20px;display: flex; flex-direction: column;">
           <p class="content-title">测量工具选择</p>
           <div style="padding-left: 20px;padding-top: 10px;">
             <el-select v-model="value2" clearable placeholder="测量选择" @change="handleSelectMeasureInteraction">
@@ -47,7 +47,7 @@
           </div>
         </div>
 
-        <div style="position: absolute; top: 210px; left: 20px;display: flex; flex-direction: column;">
+        <div style="position: absolute; top: 190px; left: 20px;display: flex; flex-direction: column;">
           <p class="content-title">地图导出工具</p>
           <div style="padding-left: 20px;padding-top: 10px;">
             <el-select v-model="value3" clearable placeholder="格式选择" @change="exportMap">
@@ -61,9 +61,16 @@
           </div>
         </div>
 
+        <div style="position: absolute; top: 270px; left: 20px;display: flex; flex-direction: column;">
+          <p class="content-title">未来十五天天气查询</p>
+          <div style="padding-left: 20px;padding-top: 10px;">
+            <el-button type="primary" @click="searchWeather">天气查询</el-button>
+          </div>
+        </div>
+
       </dv-border-box-10>
 
-      <dv-border-box-10 style="height: 400px;position: relative;margin-top: 20px">
+      <dv-border-box-10 style="height: 450px;position: relative;margin-top: 20px">
         <p class="content-title">搜索演唱会</p>
 
         <div style="position: absolute; top: 30px; left: 20px;display: flex; flex-direction: column;">
@@ -129,7 +136,11 @@
                 :style="{ width: inputWidth2 + 'px' }">
             </el-input>
             <el-button type="primary" style="margin-left: 15px" @click="priceSearch">查询</el-button>
-
+          </div>
+        </div>
+        <div style="position: absolute; top: 370px; left: 25px;display: flex; flex-direction: column;">
+          <div style="padding-top: 10px;">
+            <el-button type="primary" style="margin-left: 15px" @click="showAll">展示所有演唱会数据</el-button>
           </div>
         </div>
       </dv-border-box-10>
@@ -264,6 +275,7 @@ export default {
         });
     // 初始时计算 input 的宽度
     this.calculateWidths();
+    this.$emit('showAll');
 
   },
   methods: {
@@ -330,6 +342,12 @@ export default {
     priceSearch(){
       this.$emit('priceSearch',this.inputNumber1,this.inputNumber2);
     },
+    showAll(){
+      this.$emit('showAll');
+    },
+    searchWeather(){
+      this.$emit('searchWeather');
+    },
     getTopTen(){
       let myChart = echarts.init(document.getElementById('channelCanvas'))
       getRequest("/citycount/getConcertNumByCity").then(resp => {
@@ -372,7 +390,7 @@ export default {
             //   data: this.pieid,
             // },
             // //饼图中各模块的颜色
-            color: ['#265170', '#b6a2de', '#5ab1ef','#53bbf5'],
+            color: ['#5AD8A6', '#5D7092', '#F6BD16', '#E8684A', '#6DC8EC', '#9270CA'],
             // 饼图数据
             series: {
               name: '演出',
