@@ -100,6 +100,7 @@
               @showAll="showAll"
               @searchWeather="searchWeatherDo"
               @showHeat="showHeat"
+              @editConcert="editConcert"
           ></UserDataPreview>
           <DeviceDataPreview
               v-if="active === 1"
@@ -120,6 +121,7 @@
               @actorSearchRoutine="actorSearchRoutine"
               @searchWeather="searchWeatherDo"
               @showHeat="showHeat"
+              @editConcert="editConcert"
           >
           </DeviceDataPreview>
         </div>
@@ -158,6 +160,55 @@
           </template>
         </el-table-column>
       </el-table>
+    </el-dialog>
+
+    <el-dialog title="全部演唱会信息" :visible.sync="showTableDialog" :close-on-click-modal="false">
+      <el-table :data="this.allConcert"  height="350" border style="width: 100%">
+        <el-table-column label="艺人" prop="actors" :formatter="formatArtists" width="80"></el-table-column>
+        <el-table-column label="演唱会名称" prop="name" width="250"></el-table-column>
+        <el-table-column label="地点" prop="venue" width="160"></el-table-column>
+        <el-table-column label="时间" prop="showtime" width="100"></el-table-column>
+
+        <el-table-column label="操作">
+          <template slot-scope="scope">
+            <el-button size="mini" @click="handleEdit(scope.row)">编辑</el-button>
+            <el-button type="primary" size="mini" @click="openSubTable(scope.row)">路线规划</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-dialog>
+
+    <el-dialog title="演唱会具体信息查看" :visible.sync="showEditDialog">
+      <el-form :model="editFormData" label-width="100px">
+        <el-form-item label="艺人">
+          <el-input :value="formattedActors" :disabled="true"></el-input>
+        </el-form-item>
+
+        <el-form-item label="演唱会名称">
+          <el-input v-model="editFormData.name" :disabled="true"></el-input>
+        </el-form-item>
+        <el-form-item label="地点">
+          <el-input v-model="editFormData.venue" :disabled="true"></el-input>
+        </el-form-item>
+        <el-form-item label="时间">
+          <el-input v-model="editFormData.showtime" :disabled="true"></el-input>
+        </el-form-item>
+        <!-- 其他表单项 -->
+        <el-form-item>
+          <el-button type="primary" @click="submitEditForm">保存</el-button>
+          <el-button @click="showEditDialog = false">取消</el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
+
+    <el-dialog title="驾驶路线规划" :visible.sync="showSubTableDialog">
+      <el-table :data="subTableData" height="350" border style="width: 100%">
+        <el-table-column label="指令" prop="instruction"></el-table-column>
+        <el-table-column label="方向" prop="orientation"></el-table-column>
+        <el-table-column label="距离(米)" prop="distance"></el-table-column>
+        <!-- 其他列 -->
+      </el-table>
+
     </el-dialog>
   </div>
 </template>
@@ -209,6 +260,9 @@ export default {
   components: { UserDataPreview, DeviceDataPreview},
   computed: {
     ...mapState(["isFull"]),
+    formattedActors() {
+      return this.editFormData.actors?this.editFormData.actors.replace('艺人：', ''): "暂无信息";
+    },
   },
   data () {
     return {
@@ -251,6 +305,20 @@ export default {
       dialogVisible: false,
       city: '',
       WeatherData: [],
+      showTableDialog: false, // 控制表格弹窗的显示隐藏
+      showEditDialog: false, // 控制编辑弹窗的显示隐藏
+      showSubTableDialog: false, // 控制路线规划弹窗的显示隐藏
+      editIndex: -1, // 当前编辑的行索引，用来保存修改后的数据
+      editFormData: {
+        actors:'',
+        name: '',
+        venue:'',
+        showtime:'',
+        longutide:'',
+        lat:'',
+      },
+      subTableData: [],
+
     }
   },
   mounted () {
@@ -268,6 +336,9 @@ export default {
     })
   },
   methods: {
+    formatArtists(row, column, cellValue, index) {
+      return cellValue.replace("艺人：", "") || "暂无信息";
+    },
     // 处理搜索事件
     handleSearch(keyword) {
       console.log("搜索关键词为:", keyword);
@@ -1164,6 +1235,53 @@ export default {
         console.log(err);
       });
     },
+    editConcert(){
+      this.showTableDialog=true;
+    },
+    handleEdit(row) {
+      // 将当前行的数据赋值给编辑弹窗表单的初始值
+      this.editFormData = Object.assign({}, row)
+      this.editIndex = this.allConcert.indexOf(row)
+      // 打开编辑弹窗
+      this.showEditDialog = true
+    },
+    submitEditForm() {
+      // 隐藏编辑弹窗
+      this.showEditDialog = false
+    },
+    openSubTable(row) {
+      this.editFormData = Object.assign({}, row)
+      this.editIndex = this.allConcert.indexOf(row)
+      // 打开编辑弹窗
+      // 根据当前行的数据，查询相关路线数据并更新到subTableData中
+      navigator.geolocation.getCurrentPosition(
+          position => {
+            // 当前定位
+            const latitude = position.coords.latitude; // 纬度
+            const longitude = position.coords.longitude; // 经度
+            console.log('https://restapi.amap.com/v3/direction/driving?origin='+longitude + ',' + latitude+'&&destination='+
+                this.editFormData.longutide + ',' + this.editFormData.lat+'&key=0fba021d7503da0fe875a5aec8fc24a8')
+            axios.get('https://restapi.amap.com/v3/direction/driving?origin='+longitude + ',' + latitude+'&&destination='+
+                this.editFormData.longutide + ',' + this.editFormData.lat+'&key=0fba021d7503da0fe875a5aec8fc24a8')
+                .then(response => {
+                  if (response.data.route.paths.length > 0) {
+                    this.subTableData = response.data.route.paths[0].steps;
+
+                    console.log(this.subTableData);
+                  }
+                })
+                .catch(error => {
+                  console.log('获取路线规划数据失败：', error);
+                });
+          },
+          error => {
+            console.error(error);
+          }
+      );
+
+      // 显示路线规划弹窗
+      this.showSubTableDialog = true
+    }
   },
 };
 

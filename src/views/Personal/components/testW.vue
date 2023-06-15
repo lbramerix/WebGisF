@@ -1,94 +1,97 @@
 <template>
   <div>
-    <div class="show">
-<!--      <el-input-->
-<!--          placeholder="输入城市"-->
-<!--          suffix-icon="el-icon-cloudy"-->
-<!--          v-model="city">-->
-<!--      </el-input>-->
-      <el-button type="primary" @click="dialogVisible = true">查询</el-button>
-    </div>
-    <el-dialog title="null" :visible.sync="dialogVisible">
-      <template #title>
-        <el-input v-model="city" placeholder="请输入城市" clearable size="medium" :style="{ width: '300px' }">
-          <el-button slot="append" icon="el-icon-search" @click="doSearch"></el-button>
-        </el-input>
-      </template>
-      <el-table :data="WeatherData" max-height="320px">
-        <el-table-column property="date" label="日期" width="150"></el-table-column>
-        <el-table-column property="celsiusHigh" label="最高温度" width="120"></el-table-column>
-        <el-table-column property="celsiusLow" label="最低温度" width="120"></el-table-column>
-        <el-table-column property="condition" label="天气情况" width="150">
-<!--          <i id="my-icon" :class="WeatherData.condition"></i>-->
+    <el-button type="primary" @click="showTableDialog = true">打开表格</el-button>
+    <el-dialog title="表格弹窗" :visible.sync="showTableDialog" :close-on-click-modal="false">
+      <el-table :data="tableData" style="width: 100%">
+        <el-table-column label="姓名" prop="name"></el-table-column>
+        <el-table-column label="年龄" prop="age"></el-table-column>
+        <el-table-column label="操作">
           <template slot-scope="scope">
-            <i id="my-icon" :class="scope.row.condition"></i>
+            <el-button size="mini" @click="handleEdit(scope.row)">编辑</el-button>
+            <el-button type="primary" size="mini" @click="openSubTable(scope.row)">路线规划</el-button>
           </template>
         </el-table-column>
       </el-table>
+    </el-dialog>
+
+    <el-dialog title="编辑弹窗" :visible.sync="showEditDialog">
+      <el-form :model="editFormData" label-width="80px">
+        <el-form-item label="姓名">
+          <el-input v-model="editFormData.name" :disabled="true"></el-input>
+        </el-form-item>
+        <el-form-item label="年龄">
+          <el-input v-model.number="editFormData.age"></el-input>
+        </el-form-item>
+        <!-- 其他表单项 -->
+        <el-form-item>
+          <el-button type="primary" @click="submitEditForm">保存</el-button>
+          <el-button @click="showEditDialog = false">取消</el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
+
+    <el-dialog title="路线规划弹窗" :visible.sync="showSubTableDialog">
+      <el-table :data="subTableData" style="width: 100%">
+        <el-table-column label="操作" width="120">
+          <!-- 这里可以放置一些操作按钮，如删除、编辑等 -->
+        </el-table-column>
+        <el-table-column label="指令" prop="instruction"></el-table-column>
+        <el-table-column label="方向" prop="orientation"></el-table-column>
+        <el-table-column label="距离" prop="distance"></el-table-column>
+        <el-table-column label="时长" prop="duration"></el-table-column>
+        <!-- 其他列 -->
+      </el-table>
+
     </el-dialog>
   </div>
 </template>
 
 <script>
-import {getRequest} from "@/utils/api";
-
 export default {
-  data(){
-    return{
-      dialogVisible: false,
-      city: '',
-      WeatherData: []
+  data() {
+    return {
+      showTableDialog: false, // 控制表格弹窗的显示隐藏
+      showEditDialog: false, // 控制编辑弹窗的显示隐藏
+      showSubTableDialog: false, // 控制路线规划弹窗的显示隐藏
+      tableData: [
+        { name: '张三', age: 18 },
+        { name: '李四', age: 25 },
+        { name: '王五', age: 30 }
+      ],
+      subTableData: [
+        { start: '北京', end: '上海' },
+        { start: '广州', end: '深圳' },
+        { start: '成都', end: '重庆' }
+      ],
+      editFormData: {
+        name: '',
+        age: ''
+      },
+      editIndex: -1 // 当前编辑的行索引，用来保存修改后的数据
     }
   },
-
   methods: {
-    doSearch(){
-      // 执行异步请求，获取数据
-      const params = new URLSearchParams();
-      params.append("CityName", this.city);
-
-      getRequest("/cityVisual/getWeather", params).then(resp => {
-        if(resp){
-          console.log(resp);
-          this.WeatherData=resp;
-
-          // const count=0;
-          //
-          // while(count<this.WeatherData.length){
-          //   const icon = document.getElementById("my-icon")[0];
-          //   icon.classList.add(this.WeatherData[0].condition);
-          //   console.log("类名："+icon.className);
-          //   this.count++;
-          // }
-
-        }else{
-          this.$message.error("天气查询失败！");
-        }
-
-      }).catch(err => {
-        console.log(err);
-      });
+    handleEdit(row) {
+      // 将当前行的数据赋值给编辑弹窗表单的初始值
+      this.editFormData = Object.assign({}, row)
+      this.editIndex = this.tableData.indexOf(row)
+      // 打开编辑弹窗
+      this.showEditDialog = true
     },
+    submitEditForm() {
+      // 处理表单数据，例如将其保存到数据库或显示给用户看
+      console.log(`姓名：${this.editFormData.name}，年龄：${this.editFormData.age}`)
+      // 将修改后的数据保存到表格数据中
+      this.tableData.splice(this.editIndex, 1, this.editFormData)
+      // 隐藏编辑弹窗
+      this.showEditDialog = false
+    },
+    openSubTable(row) {
+      // 根据当前行的数据，查询相关路线数据并更新到subTableData中
+      // ...
+      // 显示路线规划弹窗
+      this.showSubTableDialog = true
+    }
   }
 }
 </script>
-
-<style scoped>
-.show{
-  margin: 100px auto;
-
-  width: 30%;
-  padding: 40px;
-  height: 140px;
-  border: 5px solid #47515d;
-  transition: all 0.9s;
-  border-radius: 10px;
-
-}
-
-.show:hover{
-  box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.4);
-  margin-top: 90px;
-}
-</style>
-

@@ -66,6 +66,8 @@
           <div style="padding-left: 20px;padding-top: 10px;">
             <el-button type="primary" @click="searchWeather">天气查询</el-button>
             <el-button type="primary" @click="showHeat" >热力图展示</el-button>
+            <el-button type="primary" @click="editConcert" >演唱会编辑</el-button>
+
 
           </div>
         </div>
@@ -352,6 +354,9 @@ export default {
     },
     showHeat(){
       this.$emit('showHeat');
+    },
+    editConcert(){
+      this.$emit('editConcert');
     },
     getTopTen(){
       let myChart = echarts.init(document.getElementById('channelCanvas'))
