@@ -97,7 +97,7 @@ export default {
 
     },
     toLogin:function(){
-      this.$router.push('/sign-in');
+      this.$router.push('/');
     }
   }
 }

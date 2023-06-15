@@ -14,7 +14,7 @@
       </div>
       <div class="header-city" @click="getTest">
 
-        <p>全国演唱会统计分析大屏区域： {{testCityname}}</p>
+        <p>全国演唱会统计分析大屏</p>
         <dv-decoration-5 style="width:600px;height:40px;" />
       </div>
       <div class="right">
@@ -22,7 +22,7 @@
           <p :class="{'active': active === 2}" @click="handleChangeType(2)">演唱会信息</p>
           <p :class="{'active': active === 1}" @click="handleChangeType(1)">艺人统计</p>
         </div>
-<!--        <dv-decoration-3 style="width:250px;height:30px;" />-->
+        <dv-decoration-3 style="width:250px;height:30px;" />
       </div>
     </header>
     <dv-decoration-10 style="width:100%;height:5px;" />
@@ -99,6 +99,7 @@
               @priceSearch="priceSearch"
               @showAll="showAll"
               @searchWeather="searchWeatherDo"
+              @showHeat="showHeat"
           ></UserDataPreview>
           <DeviceDataPreview
               v-if="active === 1"
@@ -118,6 +119,7 @@
               @exportMapJSON="downloadGeoJSON"
               @actorSearchRoutine="actorSearchRoutine"
               @searchWeather="searchWeatherDo"
+              @showHeat="showHeat"
           >
           </DeviceDataPreview>
         </div>
@@ -365,6 +367,8 @@ export default {
               this.setMap(this.searchConcert, "hyytdw");
               const lineLayer = this.map.getLayers().getArray().find(layer => layer.get('name') === 'lineLayer'); // 获取路线图层变量
               this.map.removeLayer(lineLayer); // 删除路线图层
+              const heatmapLayer = this.map.getLayers().getArray().find(layer => layer.get('name') === 'heatmapLayer'); // 获取热力图层变量
+              this.map.removeLayer(heatmapLayer); // 删除图层
               this.drawRoute(this.searchConcert);
             })
             .catch(error => {
@@ -439,7 +443,31 @@ export default {
     showAll(){
       const lineLayer = this.map.getLayers().getArray().find(layer => layer.get('name') === 'lineLayer'); // 获取路线图层变量
       this.map.removeLayer(lineLayer); // 删除路线图层
+      const heatmapLayer = this.map.getLayers().getArray().find(layer => layer.get('name') === 'heatmapLayer'); // 获取热力图层变量
+      this.map.removeLayer(heatmapLayer); // 删除图层
       this.setMap(this.allConcert, "hyytdw");
+    },
+    showHeat(){
+      const heatmapLayer = this.map.getLayers().getArray().find(layer => layer.get('name') === 'heatmapLayer'); // 获取热力图层变量
+      this.map.removeLayer(heatmapLayer); // 删除图层
+      /* 若有弹窗关闭掉 */
+      this.unSelect();
+      this.checkedListArr = this.allConcert; //把获取到的数据缓存起来
+      const layerNames = [];
+      //不能让默认的图层被隐藏
+      let allList = this.allConcert.concat(this.defaultList);
+      this.checkedList = allList;
+      this.layers.map((item) => {
+        if (allList.indexOf(item.getProperties().name) === -1) {
+          item.setVisible(false);
+        } else {
+          item.setVisible(true);
+        }
+        layerNames.push(item.getProperties().name);
+      });
+      const lineLayer = this.map.getLayers().getArray().find(layer => layer.get('name') === 'lineLayer'); // 获取路线图层变量
+      this.map.removeLayer(lineLayer); // 删除路线图层
+      this.createHeatmapLayer(this.allConcert);
     },
     test(){
       /* 若有弹窗关闭掉 */

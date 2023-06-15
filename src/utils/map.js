@@ -14,6 +14,7 @@ import Vector from "ol/source/Vector";
 import Overlay from "ol/Overlay";
 import Circle from "ant-design-vue/lib/progress/circle";
 import FeatureAnimation from 'ol-ext/featureanimation/FeatureAnimation.js';
+import {Heatmap} from "ol/layer";
 
 export const mapjs = {
 	data() {
@@ -411,7 +412,31 @@ export const mapjs = {
 				name: 'lineLayer',
 			});
 			this.map.addLayer(lineLayer);
+		},
+		createHeatmapLayer(data) {
+			// 将数据转换成热力图需要的格式
+			const heatmapSource = new VectorSource({
+				features: data.map(item => {
+					return new Feature({
+						geometry: new Point([item.longutide, item.lat]),
+						weight: item.weight
+					});
+				})
+			});
+
+			// 创建热力图层
+			const heatmapLayer = new Heatmap({
+				source: heatmapSource,
+				blur: 30,
+				radius: 10,
+				opacity: 0.8,
+				name:"heatmapLayer",
+			});
+
+			// 将热力图层添加到地图中
+			this.map.addLayer(heatmapLayer);
 		}
+
 
 	},
 };

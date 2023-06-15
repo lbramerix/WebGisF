@@ -94,9 +94,11 @@
         </div>
 
         <div style="position: absolute; top: 270px; left: 20px;display: flex; flex-direction: column;">
-          <p class="content-title">未来十五天天气查询</p>
+          <p class="content-title">其他</p>
           <div style="padding-left: 20px;padding-top: 10px;">
             <el-button type="primary" @click="searchWeather">天气查询</el-button>
+            <el-button type="primary" @click="showHeat" >热力图展示</el-button>
+
           </div>
         </div>
 
@@ -262,6 +264,9 @@ export default {
     },
     searchWeather(){
       this.$emit('searchWeather');
+    },
+    showHeat(){
+      this.$emit('showHeat');
     },
 
     // 艺人演唱会
