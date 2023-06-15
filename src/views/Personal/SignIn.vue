@@ -6,7 +6,7 @@
         <el-input type="text" placeholder="用户账号" v-model="form.id" autocomplete="off"></el-input>
       </el-form-item>
       <el-form-item prop="password">
-        <el-input type="password" placeholder="用户密码" v-model="form.password" autocomplete="off"></el-input>
+        <el-input show-password placeholder="用户密码" v-model="form.password" autocomplete="off"></el-input>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="doLogin('form')" style="width: 100%;">登录</el-button>
@@ -68,7 +68,7 @@ export default {
                 console.log("取出来的id："+userId);
 
                 this.$message.success("登录成功！");
-                this.$router.push('/personal');
+                this.$router.push('/map');
               }
             }else{
               this.$message.error("登录失败！");

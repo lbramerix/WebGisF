@@ -6,10 +6,10 @@
         <el-input type="text" placeholder="用户账号" v-model="form.id" autocomplete="off" ></el-input>
       </el-form-item>
       <el-form-item prop="password">
-        <el-input type="password" placeholder="用户密码" v-model="form.password" autocomplete="off" ></el-input>
+        <el-input show-password placeholder="用户密码" v-model="form.password" autocomplete="off" ></el-input>
       </el-form-item>
       <el-form-item prop="password1">
-        <el-input type="password" placeholder="确认密码" v-model="form.password1" autocomplete="off" ></el-input>
+        <el-input show-password placeholder="确认密码" v-model="form.password1" autocomplete="off" ></el-input>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="doRegister('form')" style="width: 48%;">注册</el-button>

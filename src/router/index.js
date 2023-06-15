@@ -5,13 +5,13 @@ Vue.use(VueRouter)
 
 const routes = [
   {
-    path: '/',
+    path: '/map',
     name: 'Home',
     meta: { requiresAuth: false },
     component: () => import('../views/Home/index.vue')
   },
   {
-    path: "/sign-in",
+    path: "/",
     name: "sign-in",
     meta: { requiresAuth: false },
     component: () => import("../views/Personal/SignIn.vue"),
@@ -52,7 +52,12 @@ const routes = [
         path: "exit",
         name: "exit",
         component: () => import('../views/Personal/components/exit')
-      }
+      },
+      {
+        path: "testW",
+        name: "testW",
+        component: () => import("../views/Personal/components/testW"),
+      },
     ]
   }
 

@@ -2,13 +2,13 @@
   <div class="show">
     <el-form ref="form" :model="form" label-width="80px" :rules="rules">
       <el-form-item label="旧密码" prop="oldPwd">
-        <el-input type="password" v-model="form.oldPwd" placeholder="请输入原始密码"></el-input>
+        <el-input show-password v-model="form.oldPwd" placeholder="请输入原始密码"></el-input>
       </el-form-item>
       <el-form-item label="新密码" prop="newPwd">
-        <el-input type="password" v-model="form.newPwd" placeholder="请输入新密码"></el-input>
+        <el-input show-password v-model="form.newPwd" placeholder="请输入新密码"></el-input>
       </el-form-item>
       <el-form-item label="确认密码" prop="confirmPwd">
-        <el-input type="password" v-model="form.confirmPwd" placeholder="请再次输入新密码"></el-input>
+        <el-input show-password v-model="form.confirmPwd" placeholder="请再次输入新密码"></el-input>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="onSubmit('form')">确认</el-button>

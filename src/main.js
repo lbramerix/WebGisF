@@ -13,6 +13,8 @@ import store from './store'
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css'
 
+// 引入和风天气图标
+import 'qweather-icons/font/qweather-icons.css'
 
 // 加载 element 组件库的样式
 import 'element-ui/lib/theme-chalk/index.css'

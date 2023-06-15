@@ -12,7 +12,7 @@
       </el-radio-group>
     </el-form-item>
     <el-form-item label="个性简介" prop="jianjie">
-      <el-input type="textarea" v-model="user.jianjie" placeholder="介绍一下你自己吧~"></el-input>
+      <el-input type="textarea" :rows="3" v-model="user.jianjie" placeholder="介绍一下你自己吧~"></el-input>
     </el-form-item>
     <el-form-item>
       <el-button type="primary" @click="onSubmit('user')">修改</el-button>
