@@ -1123,7 +1123,6 @@ export default {
       // 执行异步请求，获取数据
       const params = new URLSearchParams();
       params.append("CityName", this.city);
-
       getRequest("/cityVisual/getWeather", params).then(resp => {
         if(resp){
           console.log(resp);
