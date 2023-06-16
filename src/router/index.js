@@ -53,11 +53,6 @@ const routes = [
         name: "exit",
         component: () => import('../views/Personal/components/exit')
       },
-      {
-        path: "testW",
-        name: "testW",
-        component: () => import("../views/Personal/components/testW"),
-      },
     ]
   }
 

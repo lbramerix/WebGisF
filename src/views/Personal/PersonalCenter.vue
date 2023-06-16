@@ -29,7 +29,7 @@
             <template slot="title"><i class="el-icon-menu"></i>收藏管理</template>
             <el-menu-item-group>
               <router-link class="alink" to="/personal/collect-list"><el-menu-item index="2-1">我的收藏</el-menu-item></router-link>
-              <router-link class="alink" to="/personal/testW"><el-menu-item index="2-2">测试：天气</el-menu-item></router-link>
+<!--              <router-link class="alink" to="/personal/testW"><el-menu-item index="2-2">测试：天气</el-menu-item></router-link>-->
             </el-menu-item-group>
 
           </el-submenu>
