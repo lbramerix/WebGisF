@@ -14,7 +14,7 @@
       </div>
       <div class="header-city" @click="getTest">
 
-        <p>全国演唱会统计分析大屏</p>
+        <p>全国演唱会统计分析系统</p>
         <dv-decoration-5 style="width:600px;height:40px;" />
       </div>
       <div class="right">
